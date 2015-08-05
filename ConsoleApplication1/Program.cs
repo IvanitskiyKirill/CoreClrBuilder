@@ -24,143 +24,13 @@ namespace CoreClrBuilder
     }
     class Program
     {
-        static StreamReader /*outputReader,*/ errorReader;
+        static StreamReader errorReader;
         static List<string> outputErrors = new List<string>();
-        static string WorkingDir;
         static int Main(string[] args)
         {
             Executor executor = new Executor();
             return executor.ExecuteTasks();
-            //WorkingDir = Environment.CurrentDirectory;
-
-            //List<string> testResults = new List<string>();
-            //testResults.Add("DevExpress.Data-TestResult.xml");
-            //testResults.Add("DevExpress.Printing.Core-TestResult.xml");
-            //testResults.Add("DevExpress.Office.Core-TestResult.xml");
-            //testResults.Add("DevExpress.Charts.Core-TestResult.xml");
-            //testResults.Add("DevExpress.Sparkline.Core-TestResult.xml");
-            //testResults.Add("DevExpress.Spreadsheet.Core-TestResult.xml");
-            //testResults.Add("DevExpress.RichEdit.Core-TestResult.xml");
-            //testResults.Add("DevExpress.Pdf.Core-TestResult.xml");
-
-            //Execute("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/build.bat");
-            //Execute("build.bat", null);
-            //Execute("dnx", @"Win\DevExpress.Data test -xml DevExpress.Data-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.XtraPrinting\DevExpress.Printing.Core test -xml DevExpress.Printing.Core-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.Office\DevExpress.Office.Core test -xml DevExpress.Office.Core-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.XtraCharts\DevExpress.Charts.Core test -xml DevExpress.Charts.Core-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.XtraCharts\DevExpress.Sparkline.Core test -xml DevExpress.Sparkline.Core-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.XtraSpreadsheet\DevExpress.Spreadsheet.Core test -xml DevExpress.Spreadsheet.Core-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.XtraRichEdit\DevExpress.RichEdit.Core test -xml DevExpress.RichEdit.Core-TestResult.xml");
-            //Execute("dnx", @"Win\DevExpress.Pdf\DevExpress.Pdf.Core test -xml DevExpress.Pdf.Core-TestResult.xml");
-
-            //Execute("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt");
-            //XslCompiledTransform xslt = new XslCompiledTransform();
-            //xslt.Load("NUnitXml.xslt");
-
-            //foreach (var result in testResults)
-            //{
-            //    string resultPath = Path.Combine(WorkingDir, result);
-            //    string xunitResultPath = resultPath.Replace("TestResult", "NunitTestResult");
-            //    if (File.Exists(resultPath))
-            //        File.Delete(xunitResultPath);
-            //    if (File.Exists(resultPath))
-            //        xslt.Transform(resultPath, xunitResultPath);
-
-            //}
         }
-        static void Execute(string fileName, string args)
-        {
-            Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            //startInfo = new ProcessStartInfo(fileName, args);
-            startInfo = new ProcessStartInfo(fileName, args);
-            startInfo.WorkingDirectory = WorkingDir;
-            startInfo.UseShellExecute = false;
-            //startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
-            startInfo.CreateNoWindow = false;
-
-            process.StartInfo = startInfo;
-            process.Start();
-
-            //outputReader = process.StandardOutput;
-            //Thread outputThread = new Thread(new ThreadStart(StreamReaderThread_Output));
-            //outputThread.Start();
-
-            errorReader = process.StandardError;
-
-            for (;;)
-            {
-                string strLogContents = errorReader.ReadLine();
-                if (strLogContents == null)
-                    break;
-                else
-                    outputErrors.Add(strLogContents);
-            }
-            errorReader.BaseStream.Position = 0;
-            if (outputErrors.Count > 0)
-            {
-                //using (FileStream fileStream = new FileStream(Path.Combine(WorkingDir, "errorLog.txt"), FileMode.Append, FileAccess.Write)) {
-                //    using (StreamWriter writer = new StreamWriter(fileStream)) {
-                Console.WriteLine("-[Error]-----------------------------------------------------------------");
-                foreach (var error in outputErrors)
-                    Console.WriteLine(error);
-                Console.WriteLine("-------------------------------------------------------------------------");
-            }
-            process.WaitForExit();
-            if (process.ExitCode != 0)
-                throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
-            errorReader = null;
-            process = null;
-        }
-
-        //static bool Execute(string fileName, string args)
-        //{
-        //    Process process = new Process();
-        //    ProcessStartInfo startInfo = new ProcessStartInfo();
-        //    //startInfo = new ProcessStartInfo(fileName, args);
-        //    startInfo = new ProcessStartInfo(fileName, args);
-        //    startInfo.WorkingDirectory = WorkingDir;
-        //    startInfo.UseShellExecute = false;
-        //    //startInfo.RedirectStandardOutput = true;
-        //    startInfo.RedirectStandardError = true;
-        //    startInfo.CreateNoWindow = false;
-
-        //    process.StartInfo = startInfo;
-        //    process.Start();
-
-        //    //outputReader = process.StandardOutput;
-        //    //Thread outputThread = new Thread(new ThreadStart(StreamReaderThread_Output));
-        //    //outputThread.Start();
-
-        //    errorReader = process.StandardError;
-
-        //    StringBuilder builder = new StringBuilder();
-        //    for (;;)
-        //    {
-        //        string strLogContents = errorReader.ReadLine();
-        //        if (strLogContents == null)
-        //            break;
-        //        else
-        //            builder.AppendLine(strLogContents);
-        //    }
-        //    string errLog = builder.ToString();
-        //    if (errLog.Length > 0)
-        //    {
-        //        //using (FileStream fileStream = new FileStream(Path.Combine(WorkingDir, "errorLog.txt"), FileMode.Append, FileAccess.Write)) {
-        //        //    using (StreamWriter writer = new StreamWriter(fileStream)) {
-        //        Console.WriteLine("-[Error]-----------------------------------------------------------------");
-        //        Console.WriteLine(errLog);
-        //        Console.WriteLine("-------------------------------------------------------------------------");
-        //        //}
-        //        //}
-        //        return false;
-        //    }
-        //    process.WaitForExit();
-        //    return true;
-        //}
-
     }
 
     class Executor
@@ -180,45 +50,36 @@ namespace CoreClrBuilder
                 WorkingDir = Environment.CurrentDirectory;
 
                 List<string> testResults = new List<string>();
-                testResults.Add("DevExpress.Data-TestResult.xml");
-                testResults.Add("DevExpress.Printing.Core-TestResult.xml");
-                testResults.Add("DevExpress.Office.Core-TestResult.xml");
-                testResults.Add("DevExpress.Charts.Core-TestResult.xml");
-                testResults.Add("DevExpress.Sparkline.Core-TestResult.xml");
-                testResults.Add("DevExpress.Spreadsheet.Core-TestResult.xml");
-                testResults.Add("DevExpress.RichEdit.Core-TestResult.xml");
-                testResults.Add("DevExpress.Pdf.Core-TestResult.xml");
+                string productConfig = Path.Combine(WorkingDir, "Product.xml");
+                if (!File.Exists(productConfig))
+                    result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml");
 
-
+                ProductInfo productInfo = new ProductInfo(productConfig);
                 result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/build.bat");
                 result += DoWork("build.bat", null);
                 if (result == 0)
                 {
-                    result += DoWork("dnx", @"Win\DevExpress.Data test -xml DevExpress.Data-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.XtraPrinting\DevExpress.Printing.Core test -xml DevExpress.Printing.Core-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.Office\DevExpress.Office.Core test -xml DevExpress.Office.Core-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.XtraCharts\DevExpress.Charts.Core test -xml DevExpress.Charts.Core-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.XtraCharts\DevExpress.Sparkline.Core test -xml DevExpress.Sparkline.Core-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.XtraSpreadsheet\DevExpress.Spreadsheet.Core test -xml DevExpress.Spreadsheet.Core-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.XtraRichEdit\DevExpress.RichEdit.Core test -xml DevExpress.RichEdit.Core-TestResult.xml");
-                    result += DoWork("dnx", @"Win\DevExpress.Pdf\DevExpress.Pdf.Core test -xml DevExpress.Pdf.Core-TestResult.xml");
                     result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt");
                     XslCompiledTransform xslt = new XslCompiledTransform();
                     xslt.Load("NUnitXml.xslt");
 
-                    foreach (var testRes in testResults)
+                    foreach (var project in productInfo.Projects)
                     {
-                        string resultPath = Path.Combine(WorkingDir, testRes);
-                        string xunitResultPath = resultPath.Replace("TestResult", "NunitTestResult");
-                        if (File.Exists(resultPath))
-                            File.Delete(xunitResultPath);
-                        if (File.Exists(resultPath))
-                            xslt.Transform(resultPath, xunitResultPath);
-
+                        int testResult = DoWork("dnx", string.Format(@"{0} test -xml {1}", project.LocalPath, project.TestResultFileName));
+                        result += testResult;
+                        if (testResult == 0)
+                        {
+                            string xUnitResults = Path.Combine(WorkingDir, project.TestResultFileName);
+                            string nUnitResults = Path.Combine(WorkingDir, project.NunitTestResultFileName);
+                            if (File.Exists(nUnitResults))
+                                File.Delete(nUnitResults);
+                            if (File.Exists(xUnitResults))
+                                xslt.Transform(xUnitResults, nUnitResults);
+                        }
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 result = 1;
             }
@@ -261,18 +122,19 @@ namespace CoreClrBuilder
                 else
                     outputErrors.Add(strLogContents);
             }
-            if (outputErrors.Count > 0)
-            {
-                //using (FileStream fileStream = new FileStream(Path.Combine(WorkingDir, "errorLog.txt"), FileMode.Append, FileAccess.Write)) {
-                //    using (StreamWriter writer = new StreamWriter(fileStream)) {
-                Console.WriteLine("-[Error]-----------------------------------------------------------------");
-                foreach (var error in outputErrors)
-                    Console.WriteLine(error);
-                Console.WriteLine("-------------------------------------------------------------------------");
-            }
+            //if (outputErrors.Count > 0)
+            //{
+            //    //using (FileStream fileStream = new FileStream(Path.Combine(WorkingDir, "errorLog.txt"), FileMode.Append, FileAccess.Write)) {
+            //    //    using (StreamWriter writer = new StreamWriter(fileStream)) {
+            //    Console.WriteLine("-[Error]-----------------------------------------------------------------");
+            //    foreach (var error in outputErrors)
+            //        Console.WriteLine(error);
+            //    Console.WriteLine("-------------------------------------------------------------------------");
+            //}
             process.WaitForExit();
             if (process.ExitCode != 0)
                 throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
+            outputErrors.Clear();
             errorReader = null;
             process = null;
         }
@@ -359,6 +221,48 @@ namespace CoreClrBuilder
             catch
             {
                 return String.Empty;
+            }
+        }
+    }
+
+    class ProductInfo {
+
+        List<CoreClrProject> projects = new List<CoreClrProject>();
+        public List<CoreClrProject> Projects { get { return projects; } }
+
+        public ProductInfo(string fileName)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(fileName);
+            string releaseVersion = doc.SelectSingleNode("/ProductInfo/ProductInformation/Version").InnerText;
+            XmlNode vssLocations = doc.SelectSingleNode("/ProductInfo/VSSLocations");
+            foreach (XmlNode location in vssLocations.ChildNodes)
+            {
+                string buildConf = location.Attributes["BuildConfiguration"] == null ? "Debug" : location.Attributes["BuildConfiguration"].InnerText;
+                projects.Add(new CoreClrProject(location.Attributes["VSSPath"].InnerText, location.Attributes["ReferenceName"].InnerText, releaseVersion, buildConf));
+            }
+        }
+    }
+
+    class CoreClrProject {
+        public bool IsValid { get { return !string.IsNullOrEmpty(VSSPath) && !string.IsNullOrEmpty(LocalPath); } }
+        public string VSSPath { get; private set; }
+        public string LocalPath { get; private set; }
+        public string NugetPackageName { get; private set; }
+        public string TestResultFileName { get; private set; }
+        public string NunitTestResultFileName { get; private set; }
+        public string BuildConfiguration { get; private set; }
+        public CoreClrProject(string vssPath, string localPath, string releaseVersion, string buildConfiguration)
+        {
+            this.VSSPath = vssPath;
+            this.LocalPath = localPath;
+            this.BuildConfiguration = buildConfiguration;
+            string[] paths = localPath.Split('\\');
+            if (paths.Length > 0) {
+                string projectName = paths[paths.Length - 1];
+                this.NugetPackageName = string.Format("{0}_.{1}.nupkg", projectName, releaseVersion);
+                this.TestResultFileName = string.Format("{0}-TestResult.xml", projectName);
+                this.NunitTestResultFileName = string.Format("{0}-NunitTestResult.xml", projectName);
             }
         }
     }
