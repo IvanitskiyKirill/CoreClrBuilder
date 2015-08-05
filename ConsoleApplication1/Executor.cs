@@ -19,6 +19,8 @@ namespace CoreClrBuilder
         static string WorkingDir;
         XmlTextWriter tmpXml;
         StringBuilder taskBreakingLog = new StringBuilder();
+        ProductInfo productInfo;
+
         public int ExecuteTasks()
         {
             tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
@@ -28,35 +30,9 @@ namespace CoreClrBuilder
             {
                 WorkingDir = Environment.CurrentDirectory;
 
-                List<string> testResults = new List<string>();
-                string productConfig = Path.Combine(WorkingDir, "Product.xml");
-                if (!File.Exists(productConfig))
-                    result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml");
-
-                ProductInfo productInfo = new ProductInfo(productConfig);
-                result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/build.bat");
-                result += DoWork("build.bat", null);
-                if (result == 0)
-                {
-                    result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt");
-                    XslCompiledTransform xslt = new XslCompiledTransform();
-                    xslt.Load("NUnitXml.xslt");
-
-                    foreach (var project in productInfo.Projects)
-                    {
-                        int testResult = DoWork("dnx", string.Format(@"{0} test -xml {1}", project.LocalPath, project.TestResultFileName));
-                        result += testResult;
-                        if (testResult == 0)
-                        {
-                            string xUnitResults = Path.Combine(WorkingDir, project.TestResultFileName);
-                            string nUnitResults = Path.Combine(WorkingDir, project.NunitTestResultFileName);
-                            if (File.Exists(nUnitResults))
-                                File.Delete(nUnitResults);
-                            if (File.Exists(xUnitResults))
-                                xslt.Transform(xUnitResults, nUnitResults);
-                        }
-                    }
-                }
+                result += InstallEnvironment();
+                result += BuildProjects(result == 0);
+                result += RunTests(result == 0);
             }
             catch (Exception)
             {
@@ -72,6 +48,50 @@ namespace CoreClrBuilder
             }
             return result > 0 ? 1 : 0;
         }
+
+        int InstallEnvironment() {
+            int result = 0;
+            string productConfig = Path.Combine(WorkingDir, "Product.xml");
+            if (!File.Exists(productConfig))
+                result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml");
+
+            productInfo = new ProductInfo(productConfig);
+            return result;
+        }
+        int BuildProjects(bool canRun) {
+            int result = 0;
+            if (!canRun)
+                return result;
+            result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/build.bat");
+            result += DoWork("build.bat", null);
+            return result;
+        }
+        int RunTests(bool canRun)
+        {
+            int result = 0;
+            if (!canRun)
+                return result;
+            result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt");
+            XslCompiledTransform xslt = new XslCompiledTransform();
+            xslt.Load("NUnitXml.xslt");
+
+            foreach (var project in productInfo.Projects)
+            {
+                int testResult = DoWork("dnx", string.Format(@"{0} test -xml {1}", project.LocalPath, project.TestResultFileName));
+                result += testResult;
+                if (testResult == 0)
+                {
+                    string xUnitResults = Path.Combine(WorkingDir, project.TestResultFileName);
+                    string nUnitResults = Path.Combine(WorkingDir, project.NunitTestResultFileName);
+                    if (File.Exists(nUnitResults))
+                        File.Delete(nUnitResults);
+                    if (File.Exists(xUnitResults))
+                        xslt.Transform(xUnitResults, nUnitResults);
+                }
+            }
+            return result;
+        }
+
         static void Execute(string fileName, string args)
         {
             Process process = new Process();
