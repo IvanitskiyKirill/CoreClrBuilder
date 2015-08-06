@@ -24,7 +24,7 @@ namespace CoreClrBuilder
             if (paths.Length > 0)
             {
                 string projectName = paths[paths.Length - 1];
-                this.NugetPackageName = string.Format("{0}_.{1}.nupkg", projectName, releaseVersion);
+                this.NugetPackageName = string.Format("{0}.{1}.nupkg", projectName, releaseVersion);
                 this.TestResultFileName = string.Format("{0}-TestResult.xml", projectName);
                 this.NunitTestResultFileName = string.Format("{0}-NunitTestResult.xml", projectName);
             }
