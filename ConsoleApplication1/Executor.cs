@@ -140,7 +140,7 @@ namespace CoreClrBuilder
                 if (File.Exists(xUnitResults))
                     File.Delete(xUnitResults);
 
-                result += DoWork(dnxPath, string.Format(@"{0} test -xml {1}", project.LocalPath, project.TestResultFileName));
+                result += DoWork(dnxPath, string.Format(@"{0} --configuration {1} test -xml {2}", project.LocalPath, project.BuildConfiguration, project.TestResultFileName));
 
                 if (File.Exists(nUnitResults))
                     File.Delete(nUnitResults);
