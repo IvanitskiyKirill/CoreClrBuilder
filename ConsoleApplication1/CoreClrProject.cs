@@ -20,7 +20,7 @@ namespace CoreClrBuilder
             this.VSSPath = vssPath;
             this.LocalPath = localPath;
             this.BuildConfiguration = buildConfiguration;
-            string[] paths = localPath.Split('\\');
+            string[] paths = localPath.Trim('\\').Split('\\');
             if (paths.Length > 0)
             {
                 string projectName = paths[paths.Length - 1];

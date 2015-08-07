@@ -68,7 +68,7 @@ namespace CoreClrBuilder
             }
 
             OutputLog.LogText("Download dnx");
-            result += DoWork(dnvmPath, "install latest -Persist");
+            result += DoWork(dnvmPath, "install latest -Persist -arch x64");
 
             OutputLog.LogText("get nuget.config");
             result += DoWork("DXVCSGet.exe", @"vcsservice.devexpress.devx $/2015.2/Win/NuGet.Config Win\");
@@ -91,7 +91,8 @@ namespace CoreClrBuilder
                 return result;
             foreach (var project in productInfo.Projects)
             {
-                if (BuildProject(project) != 0)
+                result += BuildProject(project);
+                if (result != 0)
                     break;
             }
 
@@ -111,12 +112,12 @@ namespace CoreClrBuilder
                 return result;
 
             OutputLog.LogText("build");
-            result += DoWork(dnuPath, string.Format("pack {0}", project.LocalPath));//% --configuration % buildConf %
+            result += DoWork(dnuPath, string.Format("pack {0} --configuration {1}", project.LocalPath, project.BuildConfiguration));//% --configuration % buildConf %
             if (result != 0)
                 return result;
 
             OutputLog.LogText("install package");
-            result += DoWork(dnuPath, string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, WorkingDir));
+            result += DoWork(dnuPath, string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, UserProfile));
             
             return result;
         }
