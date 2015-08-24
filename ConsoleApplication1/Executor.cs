@@ -29,10 +29,14 @@ namespace CoreClrBuilder
                 builder = new CommandBuilder(settings);
 
                 result += InstallEnvironment();
-                productInfo = new ProductInfo(settings.ProductConfig, framework);
-
-                result += BuildProjects(result == 0);
-                result += RunTests(result == 0);
+                if (result == 0)
+                {
+                    settings.InitializeDNX();
+                    productInfo = new ProductInfo(settings.ProductConfig, framework);
+                    result += BuildProjects();
+                }
+                if (result == 0)
+                    result += RunTests();
             }
             catch (Exception)
             {
@@ -50,61 +54,26 @@ namespace CoreClrBuilder
         }
 
         int InstallEnvironment() {
-            int result = 0;
-            
-            if (!File.Exists(settings.ProductConfig))
-                result += DoWork(builder.GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml"));
-
-            if (!File.Exists(settings.DNVM))
-                result += DoWork("powershell.exe", "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"", "Download dnvm");
-
-            result += DoWork(settings.DNVM, "install latest -Persist -arch x64", "Download dnx");
-            result += DoWork(builder.GetFromVCS("$/2015.2/Win/NuGet.Config", @"Win\", "get nuget.config"));
-
-            settings.InitializeDNX();
-
-            return result;
+            return DoWork(new Command[] {
+                builder.GetProductConfig(),
+                builder.DownloadDNVM(),
+                builder.InstallDNX(),
+                builder.GetNugetConfig() });
         }
-        int BuildProjects(bool canRun) {
-            int result = 0;
-            if (!canRun)
-                return result;
+        int BuildProjects() {
+            List<Command> commands = new List<Command>();
             foreach (var project in productInfo.Projects)
             {
-                result += BuildProject(project);
-                if (result != 0)
-                    break;
+                commands.Add(builder.GetProject(project));
+                commands.Add(builder.Restore(project));
+                commands.Add(builder.Build(project));
+                commands.Add(builder.InstallPackage(project));
             }
-
-            return result;
+            return DoWork(commands);
         }
-        int BuildProject(CoreClrProject project) {
-            int result = 0;
-
-            builder.Project = project;
-
-            result += DoWork(builder.GetProject);
-            if (result != 0)
-                return result;  
-
-            result += DoWork(builder.Restore);
-            if (result != 0)
-                return result;
-
-            result += DoWork(builder.Build);
-            if (result != 0)
-                return result;
-
-            result += DoWork(builder.InstallPackage);
-            
-            return result;
-        }
-        int RunTests(bool canRun)
+        int RunTests()
         {
-            int result = 0;
-            if (!canRun)
-                return result;
-            result += DoWork(builder.GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt"));
+            int result = DoWork(builder.GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt"));
             XslCompiledTransform xslt = new XslCompiledTransform();
             xslt.Load("NUnitXml.xslt");
 
@@ -117,7 +86,7 @@ namespace CoreClrBuilder
                 if (File.Exists(xUnitResults))
                     File.Delete(xUnitResults);
 
-                result += DoWork(builder.RunTests);
+                result += DoWork(builder.RunTests(project));
 
                 if (File.Exists(nUnitResults))
                     File.Delete(nUnitResults);
@@ -131,14 +100,10 @@ namespace CoreClrBuilder
             NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
             return result;
         }
-        int DoWork(string fileName, string args)
-        {
-            return DoWork(new Command(fileName, args, string.Empty, settings.WorkingDir));
+        int DoWork(Command command) {
+            return DoWork(new Command[] { command });
         }
-        int DoWork(string fileName, string args, string comment) {
-            return DoWork(new Command(fileName, args, comment, settings.WorkingDir));
-        }
-        int DoWork(Command command)
+        int DoWork(IEnumerable<Command> commands)
         {
             //string cclistner = Environment.GetEnvironmentVariable("CCNetListenerFile", EnvironmentVariableTarget.Process);
             //string cclistner = "output.xml";
@@ -146,7 +111,9 @@ namespace CoreClrBuilder
             timer.Start();
             try
             {
-                command.Execute();
+                foreach (var command in commands)
+                    command.Execute();
+
                 OutputLog.LogTextNewLine("\r\n<<<<done. Elapsed time {0:F2} sec", timer.Elapsed.TotalSeconds);
                 return 0;
             }
