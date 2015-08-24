@@ -131,7 +131,7 @@ namespace CoreClrBuilder
 
         internal Command InstallDNX()
         {
-            return new Command(settings.DNVM, "install latest -Persist -arch x64", "Download dnx", settings.WorkingDir);
+            return new Command(settings.DNVM, "install latest -Persist -arch x64 -u", "Download dnx", settings.WorkingDir);
         }
 
         internal Command GetNugetConfig()
