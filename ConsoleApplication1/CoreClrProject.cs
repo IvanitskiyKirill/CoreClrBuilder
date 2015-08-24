@@ -15,11 +15,13 @@ namespace CoreClrBuilder
         public string TestResultFileName { get; private set; }
         public string NunitTestResultFileName { get; private set; }
         public string BuildConfiguration { get; private set; }
-        public CoreClrProject(string vssPath, string localPath, string releaseVersion, string buildConfiguration)
+        public string BuildFramework { get; private set; }
+        public CoreClrProject(string vssPath, string localPath, string releaseVersion, string buildConfiguration, string framework)
         {
             this.VSSPath = vssPath;
             this.LocalPath = localPath;
             this.BuildConfiguration = buildConfiguration;
+            this.BuildFramework = framework;
             string[] paths = localPath.Trim('\\').Split('\\');
             if (paths.Length > 0)
             {

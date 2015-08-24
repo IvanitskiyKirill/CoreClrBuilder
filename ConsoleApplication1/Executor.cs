@@ -13,15 +13,11 @@ namespace CoreClrBuilder
 {
     class Executor
     {
-        StreamReader errorReader;
-        List<string> outputErrors = new List<string>();
-        string WorkingDir;
-        string UserProfile;
         XmlTextWriter tmpXml;
         StringBuilder taskBreakingLog = new StringBuilder();
         ProductInfo productInfo;
-        string dnxPath, dnuPath, dnvmPath;
-
+        CommandBuilder builder;
+        EnvironmentSettings settings;
         public int ExecuteTasks(string framework)
         {
             tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
@@ -29,11 +25,13 @@ namespace CoreClrBuilder
             int result = 0;
             try
             {
-                WorkingDir = Environment.CurrentDirectory;
-                UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                settings = new EnvironmentSettings();
+                builder = new CommandBuilder(settings);
 
                 result += InstallEnvironment();
-                result += BuildProjects(framework, result == 0);
+                productInfo = new ProductInfo(settings.ProductConfig, framework);
+
+                result += BuildProjects(result == 0);
                 result += RunTests(result == 0);
             }
             catch (Exception)
@@ -53,73 +51,51 @@ namespace CoreClrBuilder
 
         int InstallEnvironment() {
             int result = 0;
-            string productConfig = Path.Combine(WorkingDir, "Product.xml");
-            if (!File.Exists(productConfig))
-                result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml");
+            
+            if (!File.Exists(settings.ProductConfig))
+                result += DoWork(builder.GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml"));
 
-            productInfo = new ProductInfo(productConfig);
-            dnvmPath = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
+            if (!File.Exists(settings.DNVM))
+                result += DoWork("powershell.exe", "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"", "Download dnvm");
 
-            if (!File.Exists(dnvmPath))
-            {
-                OutputLog.LogText("Download dnvm");
-                result += DoWork("powershell.exe", "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"");
-            }
+            result += DoWork(settings.DNVM, "install latest -Persist -arch x64", "Download dnx");
+            result += DoWork(builder.GetFromVCS("$/2015.2/Win/NuGet.Config", @"Win\", "get nuget.config"));
 
-            OutputLog.LogText("Download dnx");
-            result += DoWork(dnvmPath, "install latest -Persist -arch x64");
-
-            OutputLog.LogText("get nuget.config");
-            result += DoWork("DXVCSGet.exe", @"vcsservice.devexpress.devx $/2015.2/Win/NuGet.Config Win\");
-            //File.Copy(string.Format(@"{0}\Win\NuGet.Config", WorkingDir), string.Format(@"{0}\AppData\Roaming\NuGet\NuGet.Config", UserProfile), true);
-
-            string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
-            foreach (var path in paths)
-            {
-                if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd"))) {
-                    dnxPath = Path.Combine(path, "dnx.exe");
-                    dnuPath = Path.Combine(path, "dnu.cmd");
-                }
-            }
+            settings.InitializeDNX();
 
             return result;
         }
-        int BuildProjects(string framework, bool canRun) {
+        int BuildProjects(bool canRun) {
             int result = 0;
             if (!canRun)
                 return result;
             foreach (var project in productInfo.Projects)
             {
-                result += BuildProject(framework, project);
+                result += BuildProject(project);
                 if (result != 0)
                     break;
             }
 
             return result;
         }
-        int BuildProject(string framework, CoreClrProject project) {
+        int BuildProject(CoreClrProject project) {
             int result = 0;
 
-            OutputLog.LogText("get from VCS");
-            result += DoWork("DXVCSGet.exe", string.Format("vcsservice.devexpress.devx {0} {1}", project.VSSPath, project.LocalPath));
+            builder.Project = project;
+
+            result += DoWork(builder.GetProject);
             if (result != 0)
                 return result;  
 
-            OutputLog.LogText("call dnu restore");
-            result += DoWork(dnuPath, string.Format("restore {0}", project.LocalPath));
+            result += DoWork(builder.Restore);
             if (result != 0)
                 return result;
 
-            OutputLog.LogText("build");
-            string buildParams = string.Format("pack {0} --configuration {1}", project.LocalPath, project.BuildConfiguration);
-            if (!string.IsNullOrEmpty(framework))
-                buildParams += string.Format("--framework {0}", framework);
-            result += DoWork(dnuPath, buildParams);
+            result += DoWork(builder.Build);
             if (result != 0)
                 return result;
 
-            OutputLog.LogText("install package");
-            result += DoWork(dnuPath, string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, UserProfile));
+            result += DoWork(builder.InstallPackage);
             
             return result;
         }
@@ -128,20 +104,20 @@ namespace CoreClrBuilder
             int result = 0;
             if (!canRun)
                 return result;
-            result += DoWork("DXVCSGet.exe", "vcsservice.devexpress.devx $/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt");
+            result += DoWork(builder.GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt"));
             XslCompiledTransform xslt = new XslCompiledTransform();
             xslt.Load("NUnitXml.xslt");
 
             List<string> nUnitTestFiles = new List<string>();
             foreach (var project in productInfo.Projects)
             {
-                string xUnitResults = Path.Combine(WorkingDir, project.TestResultFileName);
-                string nUnitResults = Path.Combine(WorkingDir, project.NunitTestResultFileName);
+                string xUnitResults = Path.Combine(settings.WorkingDir, project.TestResultFileName);
+                string nUnitResults = Path.Combine(settings.WorkingDir, project.NunitTestResultFileName);
 
                 if (File.Exists(xUnitResults))
                     File.Delete(xUnitResults);
 
-                result += DoWork(dnxPath, string.Format(@"{0} --configuration {1} test -xml {2}", project.LocalPath, project.BuildConfiguration, project.TestResultFileName));
+                result += DoWork(builder.RunTests);
 
                 if (File.Exists(nUnitResults))
                     File.Delete(nUnitResults);
@@ -155,42 +131,14 @@ namespace CoreClrBuilder
             NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
             return result;
         }
-        void Execute(string fileName, string args)
-        {
-            Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo = new ProcessStartInfo(fileName, args);
-            startInfo.WorkingDirectory = WorkingDir;
-            startInfo.UseShellExecute = false;
-            //startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
-            startInfo.CreateNoWindow = false;
-
-            process.StartInfo = startInfo;
-            process.Start();
-
-            //outputReader = process.StandardOutput;
-            //Thread outputThread = new Thread(new ThreadStart(StreamReaderThread_Output));
-            //outputThread.Start();
-
-            errorReader = process.StandardError;
-
-            for (;;)
-            {
-                string strLogContents = errorReader.ReadLine();
-                if (strLogContents == null)
-                    break;
-                else
-                    outputErrors.Add(strLogContents);
-            }
-            process.WaitForExit();
-            if (process.ExitCode != 0)
-                throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
-            outputErrors.Clear();
-            errorReader = null;
-            process = null;
-        }
         int DoWork(string fileName, string args)
+        {
+            return DoWork(new Command(fileName, args, string.Empty, settings.WorkingDir));
+        }
+        int DoWork(string fileName, string args, string comment) {
+            return DoWork(new Command(fileName, args, comment, settings.WorkingDir));
+        }
+        int DoWork(Command command)
         {
             //string cclistner = Environment.GetEnvironmentVariable("CCNetListenerFile", EnvironmentVariableTarget.Process);
             //string cclistner = "output.xml";
@@ -198,7 +146,7 @@ namespace CoreClrBuilder
             timer.Start();
             try
             {
-                Execute(fileName, args);
+                command.Execute();
                 OutputLog.LogTextNewLine("\r\n<<<<done. Elapsed time {0:F2} sec", timer.Elapsed.TotalSeconds);
                 return 0;
             }
@@ -274,19 +222,6 @@ namespace CoreClrBuilder
             {
                 return String.Empty;
             }
-        }
-    }
-
-    class CoreClrCommand {
-        public string FileName { get; private set; }
-        public string Arguments { get; private set; }
-        public string Comment { get; private set; }
-
-        public CoreClrCommand(string fileName, string arguments, string comment)
-        {
-            FileName = fileName;
-            Arguments = arguments;
-            Comment = comment;
         }
     }
 }

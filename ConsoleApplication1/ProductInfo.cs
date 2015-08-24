@@ -13,7 +13,7 @@ namespace CoreClrBuilder
         List<CoreClrProject> projects = new List<CoreClrProject>();
         public List<CoreClrProject> Projects { get { return projects; } }
 
-        public ProductInfo(string fileName)
+        public ProductInfo(string fileName, string framework)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
@@ -22,7 +22,7 @@ namespace CoreClrBuilder
             foreach (XmlNode location in vssLocations.ChildNodes)
             {
                 string buildConf = location.Attributes["BuildConfiguration"] == null ? "Debug" : location.Attributes["BuildConfiguration"].InnerText;
-                projects.Add(new CoreClrProject(location.Attributes["VSSPath"].InnerText, location.Attributes["ReferenceName"].InnerText, releaseVersion, buildConf));
+                projects.Add(new CoreClrProject(location.Attributes["VSSPath"].InnerText, location.Attributes["ReferenceName"].InnerText, releaseVersion, buildConf, framework));
             }
         }
     }
