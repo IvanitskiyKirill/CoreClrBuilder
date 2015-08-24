@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="CoreClrProject.cs" />
     <Compile Include="Executor.cs" />
+    <Compile Include="NUnitMerger.cs" />
     <Compile Include="OutputLog.cs" />
     <Compile Include="ProductInfo.cs" />
     <Compile Include="Program.cs" />
