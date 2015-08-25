@@ -93,7 +93,7 @@ namespace CoreClrBuilder
         }
         public Command RunTests(CoreClrProject project)
         {
-            return new Command(settings.DNX, string.Format(@"{0} --configuration {1} test -xml {2}", project.LocalPath, project.BuildConfiguration, project.TestResultFileName), "run tests", settings.WorkingDir);
+            return new Command(settings.DNX, string.Format(@"-p {0} --configuration {1} test -xml {2}", project.LocalPath, project.BuildConfiguration, project.TestResultFileName), "run tests", settings.WorkingDir);
         }
         EnvironmentSettings settings;
         public CommandBuilder(EnvironmentSettings settings)
@@ -114,7 +114,6 @@ namespace CoreClrBuilder
                 throw new ArgumentNullException("remote path cannot be null");
             return new Command("DXVCSGet.exe", string.Format("vcsservice.devexpress.devx {0} {1}", remotePath, localPath), comment, settings.WorkingDir);
         }
-
         internal Command GetProductConfig()
         {
             if (!File.Exists(settings.ProductConfig))
@@ -129,9 +128,11 @@ namespace CoreClrBuilder
             return Command.CreateEmptyCommand();
         }
 
-        internal Command InstallDNX()
+        internal Command InstallDNX(string framework, bool isUnstable)
         {
-            return new Command(settings.DNVM, "install latest -Persist -arch x64 -u", "Download dnx", settings.WorkingDir);
+            string runtime = string.IsNullOrEmpty(framework) || string.Compare(framework, "dnx451", true) == 0 ? string.Empty : "-r coreclr";
+            string unstable = isUnstable ? "-u" : string.Empty;
+            return new Command(settings.DNVM, string.Format("upgrade -arch x64 {0} {1}", runtime, unstable), "Download dnx", settings.WorkingDir);
         }
 
         internal Command GetNugetConfig()

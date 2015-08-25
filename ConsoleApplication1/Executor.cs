@@ -28,7 +28,7 @@ namespace CoreClrBuilder
                 settings = new EnvironmentSettings();
                 builder = new CommandBuilder(settings);
 
-                result += InstallEnvironment();
+                result += InstallEnvironment(framework);
                 if (result == 0)
                 {
                     settings.InitializeDNX();
@@ -53,11 +53,11 @@ namespace CoreClrBuilder
             return result > 0 ? 1 : 0;
         }
 
-        int InstallEnvironment() {
+        int InstallEnvironment(string framework) {
             return DoWork(new Command[] {
                 builder.GetProductConfig(),
                 builder.DownloadDNVM(),
-                builder.InstallDNX(),
+                builder.InstallDNX(framework, true),
                 builder.GetNugetConfig() });
         }
         int BuildProjects() {
