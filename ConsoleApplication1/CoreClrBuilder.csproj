@@ -44,7 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="CommandBuilder.cs" />
     <Compile Include="CoreClrProject.cs" />
+    <Compile Include="EnvironmentSettings.cs" />
     <Compile Include="Executor.cs" />
     <Compile Include="NUnitMerger.cs" />
     <Compile Include="OutputLog.cs" />
