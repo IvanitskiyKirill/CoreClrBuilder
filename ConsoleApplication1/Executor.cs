@@ -73,7 +73,7 @@ namespace CoreClrBuilder
         }
         int RunTests()
         {
-            int result = DoWork(builder.GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/NUnitXml.xslt"));
+            int result = DoWork(builder.GetFromVCS(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", settings.BranchVersionShort)));
             XslCompiledTransform xslt = new XslCompiledTransform();
             xslt.Load("NUnitXml.xslt");
 

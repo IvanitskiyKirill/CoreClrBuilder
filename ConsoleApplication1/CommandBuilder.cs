@@ -50,7 +50,7 @@ namespace CoreClrBuilder
         internal Command GetProductConfig()
         {
             if (!File.Exists(settings.ProductConfig))
-                return GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml");
+                return GetFromVCS(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/Product.xml", settings.BranchVersionShort), string.Empty, "Get Product.xml");
             return Command.CreateEmptyCommand();
         }
         internal Command DownloadDNVM()
@@ -65,7 +65,7 @@ namespace CoreClrBuilder
         }
         internal Command GetNugetConfig()
         {
-            return GetFromVCS("$/2015.2/Win/NuGet.Config", @"Win\", "get nuget.config");
+            return GetFromVCS(string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion), @"Win\", "get nuget.config");
         }
     }
 }

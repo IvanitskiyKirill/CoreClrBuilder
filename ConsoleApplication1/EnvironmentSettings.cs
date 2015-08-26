@@ -12,7 +12,9 @@ namespace CoreClrBuilder
         public string UserProfile { get; private set; }
         public string WorkingDir { get; private set; }
         public string ProductConfig { get; private set; }
-        public string RemoteSettingsPath { get { return @"$/CCNetConfig/LocalProjects/15.2/BuildPortable/"; } }
+        public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
+        public string BranchVersion { get { return "2015.2"; } }
+        public string BranchVersionShort { get { return "15.2"; } }
         public EnvironmentSettings()
         {
             DXVCSGet = "DXVCSGet.exe";
