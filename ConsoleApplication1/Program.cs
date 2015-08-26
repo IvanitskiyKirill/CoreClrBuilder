@@ -84,7 +84,7 @@ namespace CoreClrBuilder
             string args = string.IsNullOrEmpty(DNXVersion) ? "upgrade" : "install " + DNXVersion + " -Persist";
             if (string.IsNullOrEmpty(Runtime))
             {
-                string runtime = string.IsNullOrEmpty(Framework) || string.Compare(Framework, "dnx451", true) == 0 ? string.Empty : "coreclr";
+                string runtime = string.IsNullOrEmpty(Framework) || string.Compare(Framework, "dnx451", true) == 0 ? "clr" : "coreclr";
                 args += " -r " + runtime;
             }
             else
