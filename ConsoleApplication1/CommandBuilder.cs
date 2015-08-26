@@ -5,6 +5,8 @@ namespace CoreClrBuilder
 {
     class CommandBuilder
     {
+        EnvironmentSettings settings;
+
         public Command GetProject(CoreClrProject project)
         {
             return new Command(settings.DXVCSGet, string.Format("vcsservice.devexpress.devx {0} {1}", project.VSSPath, project.LocalPath), "get from VCS", settings.WorkingDir);
@@ -28,7 +30,6 @@ namespace CoreClrBuilder
         {
             return new Command(settings.DNX, string.Format(@"-p {0} --configuration {1} test -xml {2}", project.LocalPath, project.BuildConfiguration, project.TestResultFileName), "run tests", settings.WorkingDir);
         }
-        EnvironmentSettings settings;
         public CommandBuilder(EnvironmentSettings settings)
         {
             this.settings = settings;

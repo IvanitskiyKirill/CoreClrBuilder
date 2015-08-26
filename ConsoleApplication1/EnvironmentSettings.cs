@@ -13,8 +13,8 @@ namespace CoreClrBuilder
         public string WorkingDir { get; private set; }
         public string ProductConfig { get; private set; }
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
-        public string BranchVersion { get { return "2015.2"; } }
-        public string BranchVersionShort { get { return "15.2"; } }
+        public string BranchVersion { get; private set; }
+        public string BranchVersionShort { get; private set; }
         public EnvironmentSettings()
         {
             DXVCSGet = "DXVCSGet.exe";
@@ -34,6 +34,13 @@ namespace CoreClrBuilder
                     DNU = Path.Combine(path, "dnu.cmd");
                 }
             }
+        }
+        public void SetBranchVersion(string releaseVersion) {
+            string[] parts = releaseVersion.Split('.');
+            if (parts.Length < 2)
+                return;
+            BranchVersionShort = string.Format("{0}.{1}", parts[0], parts[1]);
+            BranchVersion = "20" + BranchVersionShort;
         }
     }
 }

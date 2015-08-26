@@ -31,8 +31,7 @@ namespace CoreClrBuilder
                 result += InstallEnvironment(dnxsettings);
                 if (result == 0)
                 {
-                    settings.InitializeDNX();
-                    productInfo = new ProductInfo(settings.ProductConfig, dnxsettings.Framework);
+                    
                     result += BuildProjects();
                 }
                 if (result == 0)
@@ -54,11 +53,17 @@ namespace CoreClrBuilder
         }
 
         int InstallEnvironment(DNXSettings dnxsettings) {
-            return DoWork(new Command[] {
+            int result = DoWork(new Command[] {
                 builder.GetProductConfig(),
                 builder.DownloadDNVM(),
-                builder.InstallDNX(dnxsettings),
-                builder.GetNugetConfig() });
+                builder.InstallDNX(dnxsettings) });
+
+            settings.InitializeDNX();
+            productInfo = new ProductInfo(settings.ProductConfig, dnxsettings.Framework);
+            settings.SetBranchVersion(productInfo.ReleaseVersion);
+
+            result += DoWork(builder.GetNugetConfig());
+            return result;
         }
         int BuildProjects() {
             List<Command> commands = new List<Command>();
