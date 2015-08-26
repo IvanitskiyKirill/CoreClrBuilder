@@ -31,11 +31,8 @@ namespace CoreClrBuilder
                 builder = new CommandBuilder(settings);
 
                 result += InstallEnvironment(dnxsettings);
-                if (result == 0)
-                {
-                    
+                if (result == 0 && stepSettings.Build)
                     result += BuildProjects();
-                }
                 if (result == 0 && stepSettings.RunTests)
                     result += RunTests();
             }
@@ -71,15 +68,12 @@ namespace CoreClrBuilder
             List<Command> commands = new List<Command>();
             foreach (var project in productInfo.Projects)
             {
-                if(stepSettings.GetProjectsFromDXVCS)
+                if (stepSettings.GetProjectsFromDXVCS)
                     commands.Add(builder.GetProject(project));
                 if (stepSettings.RestorePackages)
                     commands.Add(builder.Restore(project));
-                if (stepSettings.Build)
-                {
-                    commands.Add(builder.Build(project));
-                    commands.Add(builder.InstallPackage(project));
-                }
+                commands.Add(builder.Build(project));
+                commands.Add(builder.InstallPackage(project));
             }
             return DoWork(commands);
         }
