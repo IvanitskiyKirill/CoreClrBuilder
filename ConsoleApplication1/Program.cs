@@ -26,9 +26,16 @@ namespace CoreClrBuilder
 ""-arch"" - x64 or x86
 ""-v"" - version of dnx (Example: 1.0.0-beta4-11566)
 ""dnx451"" or ""dotnet"" or ""dnxcore50"" - target framework
+""exclude_steps: <steps>""  - (Sample: exclude_steps: get restore test)
+    Availible steps:
+    ""get"" - get projects from DXVCS    
+    ""restore"" - restore packages for projects
+    ""build"" - build projects
+    ""test"" - run tests
 ");
                 return 0;
             }
+            StepSettings stepSettings = new StepSettings();
             DNXSettings settings = new DNXSettings();
             for (int i = 0; i < args.Length; i++)
             {
@@ -59,9 +66,39 @@ namespace CoreClrBuilder
                 {
                     settings.DNXVersion = args[i + 1];
                 }
+                else if (string.Compare(arg, "exclude_steps:", true) == 0 && i < args.Length - 1)
+                {
+                    while (i + 1 < args.Length) {
+                        if (string.Compare(args[i + 1], "get", true) == 0)
+                            stepSettings.GetProjectsFromDXVCS = false;
+                        else if (string.Compare(args[i + 1], "restore", true) == 0)
+                            stepSettings.RestorePackages = false;
+                        else if (string.Compare(args[i + 1], "build", true) == 0)
+                            stepSettings.Build = false;
+                        else if (string.Compare(args[i + 1], "test", true) == 0)
+                            stepSettings.RunTests = false;
+                        else
+                            break;
+                        i++;
+                    }
+                }
             }
             Executor executor = new Executor();
-            return executor.ExecuteTasks(settings);
+            return executor.ExecuteTasks(settings, stepSettings);
+        }
+    }
+    class StepSettings {
+        public bool Build { get; set; }
+        public bool RunTests { get; set; }
+        public bool RestorePackages { get; set; }
+        public bool GetProjectsFromDXVCS { get; set; }
+
+        public StepSettings()
+        {
+            Build = true;
+            RunTests = true;
+            RestorePackages = true;
+            GetProjectsFromDXVCS = true;
         }
     }
     class DNXSettings

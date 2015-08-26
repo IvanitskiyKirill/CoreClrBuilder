@@ -18,13 +18,15 @@ namespace CoreClrBuilder
         ProductInfo productInfo;
         CommandBuilder builder;
         EnvironmentSettings settings;
-        public int ExecuteTasks(DNXSettings dnxsettings)
+        StepSettings stepSettings;
+        public int ExecuteTasks(DNXSettings dnxsettings, StepSettings stepSettings)
         {
             tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
             tmpXml.Formatting = Formatting.Indented;
             int result = 0;
             try
             {
+                this.stepSettings = stepSettings;
                 settings = new EnvironmentSettings();
                 builder = new CommandBuilder(settings);
 
@@ -34,7 +36,7 @@ namespace CoreClrBuilder
                     
                     result += BuildProjects();
                 }
-                if (result == 0)
+                if (result == 0 && stepSettings.RunTests)
                     result += RunTests();
             }
             catch (Exception)
@@ -69,10 +71,15 @@ namespace CoreClrBuilder
             List<Command> commands = new List<Command>();
             foreach (var project in productInfo.Projects)
             {
-                commands.Add(builder.GetProject(project));
-                commands.Add(builder.Restore(project));
-                commands.Add(builder.Build(project));
-                commands.Add(builder.InstallPackage(project));
+                if(stepSettings.GetProjectsFromDXVCS)
+                    commands.Add(builder.GetProject(project));
+                if (stepSettings.RestorePackages)
+                    commands.Add(builder.Restore(project));
+                if (stepSettings.Build)
+                {
+                    commands.Add(builder.Build(project));
+                    commands.Add(builder.InstallPackage(project));
+                }
             }
             return DoWork(commands);
         }
