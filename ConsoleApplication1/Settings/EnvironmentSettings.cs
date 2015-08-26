@@ -30,7 +30,7 @@ namespace CoreClrBuilder
         {
             for (int i = 0; i < args.Length; i++)
             {
-                if (string.Compare(args[i], "-branch", true) == 0 && i < args.Length - 1)
+                if ((string.Compare(args[i], "-branch", true) == 0 || string.Compare(args[i], "-b", true) == 0) && i < args.Length - 1)
                 {
                     SetBranchVersion(args[i + 1]);
                     break;

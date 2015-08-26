@@ -26,9 +26,12 @@ namespace CoreClrBuilder
 ""-arch"" - x64 or x86
 ""-v"" - version of dnx (Example: 1.0.0-beta4-11566)
 ""dnx451"" or ""dotnet"" or ""dnxcore50"" - target framework
-""-branch"" - release branch (Example: -branch 15.2)
-""exclude_steps: <steps>""  - (Sample: exclude_steps: get restore test)
+""-branch"" or ""-b"" - release branch (Example: -branch 15.2)
+""-remove_projects"" or ""-rm""- remove direcories with projects
+""exclude_steps: <steps>"" or ""ex: <steps>""- (Sample: exclude_steps: get restore test)
     Availible steps to exclude:
+    ""all"" - all steps
+    ""env_init"" - dnx and dnvm installation, getting nuget.config, product.xml
     ""get"" - get projects from DXVCS    
     ""restore"" - restore packages for projects
     ""build"" - get from DXVCS, restore packages and build projects

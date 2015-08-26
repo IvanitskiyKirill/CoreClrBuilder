@@ -66,7 +66,9 @@ namespace CoreClrBuilder
         }
         internal Command GetNugetConfig()
         {
-            return GetFromVCS(string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion), @"Win\", "get nuget.config");
+            if (!File.Exists(Path.Combine(settings.WorkingDir, @"Win\NuGet.Config")))
+                return GetFromVCS(string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion), @"Win\", "get nuget.config");
+            return Command.CreateEmptyCommand();
         }
     }
 }

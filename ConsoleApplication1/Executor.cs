@@ -31,6 +31,10 @@ namespace CoreClrBuilder
                 builder = new CommandBuilder(this.envSettings);
 
                 result += InstallEnvironment(dnxSettings);
+
+                if (stepSettings.RemoveProjectsDirectories)
+                    RemoveProjects();
+
                 if (result == 0 && stepSettings.Build)
                     result += BuildProjects();
                 if (result == 0 && stepSettings.RunTests)
@@ -51,20 +55,53 @@ namespace CoreClrBuilder
             return result > 0 ? 1 : 0;
         }
 
-        int InstallEnvironment(DNXSettings dnxsettings) {
-            int result = DoWork(new Command[] {
-                builder.GetProductConfig(),
-                builder.DownloadDNVM(),
-                builder.InstallDNX(dnxsettings) });
+        private void RemoveProjects()
+        {
+            Console.WriteLine("Remove projects");
+            foreach (var item in productInfo.Projects)
+            {
+                if (Directory.Exists(item.LocalPath))
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(item.LocalPath);
+                    setAttributesNormal(dirInfo);
+                    Console.WriteLine("Remove dir {0}", item.LocalPath);
+                    Directory.Delete(item.LocalPath, true);
+                }
+                else
+                {
+                    Console.WriteLine("dir {0} doesn't exist", item.LocalPath);
+                }
+            }
+        }
+
+        void setAttributesNormal(DirectoryInfo dir)
+        {
+            foreach (DirectoryInfo subDir in dir.GetDirectories())
+                setAttributesNormal(subDir);
+            foreach (FileInfo fileInfo in dir.GetFiles())
+                fileInfo.Attributes = FileAttributes.Normal;
+
+        }
+
+        int InstallEnvironment(DNXSettings dnxsettings)
+        {
+            int result = 0;
+            if (stepSettings.EnvironmentInitialization)
+                result = DoWork(new Command[] {
+                    builder.GetProductConfig(),
+                    builder.DownloadDNVM(),
+                    builder.InstallDNX(dnxsettings) });
 
             envSettings.InitializeDNX();
             productInfo = new ProductInfo(envSettings.ProductConfig, dnxsettings.Framework);
             envSettings.SetBranchVersion(productInfo.ReleaseVersion);
 
-            result += DoWork(builder.GetNugetConfig());
+            if (stepSettings.EnvironmentInitialization)
+                result += DoWork(builder.GetNugetConfig());
             return result;
         }
-        int BuildProjects() {
+        int BuildProjects()
+        {
             List<Command> commands = new List<Command>();
             foreach (var project in productInfo.Projects)
             {
@@ -106,7 +143,8 @@ namespace CoreClrBuilder
             NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
             return result;
         }
-        int DoWork(Command command) {
+        int DoWork(Command command)
+        {
             return DoWork(new Command[] { command });
         }
         int DoWork(IEnumerable<Command> commands)
