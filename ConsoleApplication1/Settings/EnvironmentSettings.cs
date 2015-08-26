@@ -15,14 +15,29 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
-        public EnvironmentSettings()
+        public EnvironmentSettings(string[] args)
         {
             DXVCSGet = "DXVCSGet.exe";
             WorkingDir = Environment.CurrentDirectory;
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
+
+            InitBranchVersion(args);
         }
+
+        void InitBranchVersion(string[] args)
+        {
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (string.Compare(args[i], "-branch", true) == 0 && i < args.Length - 1)
+                {
+                    SetBranchVersion(args[i + 1]);
+                    break;
+                }
+            }
+        }
+
         public void InitializeDNX()
         {
             string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');

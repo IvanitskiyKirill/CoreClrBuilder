@@ -17,9 +17,9 @@ namespace CoreClrBuilder
         StringBuilder taskBreakingLog = new StringBuilder();
         ProductInfo productInfo;
         CommandBuilder builder;
-        EnvironmentSettings settings;
+        EnvironmentSettings envSettings;
         StepSettings stepSettings;
-        public int ExecuteTasks(DNXSettings dnxsettings, StepSettings stepSettings)
+        public int ExecuteTasks(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings)
         {
             tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
             tmpXml.Formatting = Formatting.Indented;
@@ -27,10 +27,10 @@ namespace CoreClrBuilder
             try
             {
                 this.stepSettings = stepSettings;
-                settings = new EnvironmentSettings();
-                builder = new CommandBuilder(settings);
+                this.envSettings = envSettings;
+                builder = new CommandBuilder(this.envSettings);
 
-                result += InstallEnvironment(dnxsettings);
+                result += InstallEnvironment(dnxSettings);
                 if (result == 0 && stepSettings.Build)
                     result += BuildProjects();
                 if (result == 0 && stepSettings.RunTests)
@@ -57,9 +57,9 @@ namespace CoreClrBuilder
                 builder.DownloadDNVM(),
                 builder.InstallDNX(dnxsettings) });
 
-            settings.InitializeDNX();
-            productInfo = new ProductInfo(settings.ProductConfig, dnxsettings.Framework);
-            settings.SetBranchVersion(productInfo.ReleaseVersion);
+            envSettings.InitializeDNX();
+            productInfo = new ProductInfo(envSettings.ProductConfig, dnxsettings.Framework);
+            envSettings.SetBranchVersion(productInfo.ReleaseVersion);
 
             result += DoWork(builder.GetNugetConfig());
             return result;
@@ -79,15 +79,15 @@ namespace CoreClrBuilder
         }
         int RunTests()
         {
-            int result = DoWork(builder.GetFromVCS(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", settings.BranchVersionShort)));
+            int result = DoWork(builder.GetFromVCS(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort)));
             XslCompiledTransform xslt = new XslCompiledTransform();
             xslt.Load("NUnitXml.xslt");
 
             List<string> nUnitTestFiles = new List<string>();
             foreach (var project in productInfo.Projects)
             {
-                string xUnitResults = Path.Combine(settings.WorkingDir, project.TestResultFileName);
-                string nUnitResults = Path.Combine(settings.WorkingDir, project.NunitTestResultFileName);
+                string xUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
+                string nUnitResults = Path.Combine(envSettings.WorkingDir, project.NunitTestResultFileName);
 
                 if (File.Exists(xUnitResults))
                     File.Delete(xUnitResults);
