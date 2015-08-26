@@ -59,11 +59,20 @@ namespace CoreClrBuilder
                     outputErrors.Add(strLogContents);
             }
             process.WaitForExit();
-            if (process.ExitCode != 0)
+            if (process.ExitCode != 0 || outputErrors.Count != 0)
                 throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
             outputErrors.Clear();
             errorReader = null;
             process = null;
+        }
+
+        public override string ToString()
+        {
+            if (empty)
+                return "Empty Command";
+            if (string.IsNullOrEmpty(comment))
+                return base.ToString();
+            return "Command: " + comment;
         }
     }
 }

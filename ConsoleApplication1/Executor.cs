@@ -18,7 +18,7 @@ namespace CoreClrBuilder
         ProductInfo productInfo;
         CommandBuilder builder;
         EnvironmentSettings settings;
-        public int ExecuteTasks(string framework)
+        public int ExecuteTasks(DNXSettings dnxsettings)
         {
             tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
             tmpXml.Formatting = Formatting.Indented;
@@ -28,11 +28,11 @@ namespace CoreClrBuilder
                 settings = new EnvironmentSettings();
                 builder = new CommandBuilder(settings);
 
-                result += InstallEnvironment(framework);
+                result += InstallEnvironment(dnxsettings);
                 if (result == 0)
                 {
                     settings.InitializeDNX();
-                    productInfo = new ProductInfo(settings.ProductConfig, framework);
+                    productInfo = new ProductInfo(settings.ProductConfig, dnxsettings.Framework);
                     result += BuildProjects();
                 }
                 if (result == 0)
@@ -53,11 +53,11 @@ namespace CoreClrBuilder
             return result > 0 ? 1 : 0;
         }
 
-        int InstallEnvironment(string framework) {
+        int InstallEnvironment(DNXSettings dnxsettings) {
             return DoWork(new Command[] {
                 builder.GetProductConfig(),
                 builder.DownloadDNVM(),
-                builder.InstallDNX(framework, true),
+                builder.InstallDNX(dnxsettings),
                 builder.GetNugetConfig() });
         }
         int BuildProjects() {

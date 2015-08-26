@@ -53,21 +53,16 @@ namespace CoreClrBuilder
                 return GetFromVCS("$/CCNetConfig/LocalProjects/15.2/BuildPortable/Product.xml");
             return Command.CreateEmptyCommand();
         }
-
         internal Command DownloadDNVM()
         {
             if (!File.Exists(settings.DNVM))
                 return new Command("powershell.exe", "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"", "Download dnvm", settings.WorkingDir);
             return Command.CreateEmptyCommand();
         }
-
-        internal Command InstallDNX(string framework, bool isUnstable)
+        internal Command InstallDNX(DNXSettings dnxsettings)
         {
-            string runtime = string.IsNullOrEmpty(framework) || string.Compare(framework, "dnx451", true) == 0 ? string.Empty : "-r coreclr";
-            string unstable = isUnstable ? "-u" : string.Empty;
-            return new Command(settings.DNVM, string.Format("upgrade -arch x64 {0} {1}", runtime, unstable), "Download dnx", settings.WorkingDir);
+            return new Command(settings.DNVM, dnxsettings.CreateArgsForDNX(), "Install dnx", settings.WorkingDir);
         }
-
         internal Command GetNugetConfig()
         {
             return GetFromVCS("$/2015.2/Win/NuGet.Config", @"Win\", "get nuget.config");
