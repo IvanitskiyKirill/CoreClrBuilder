@@ -15,6 +15,8 @@ namespace CoreClrBuilder
         public bool GetProjectsFromDXVCS { get; private set; }
 
         public bool RemoveProjectsDirectories { get; private set; }
+        public bool CopyDirs { get; private set; }
+        public string CopyPath { get; private set; }
         public StepSettings(string [] args)
         {
             Build = true;
@@ -43,11 +45,7 @@ namespace CoreClrBuilder
                             EnvironmentInitialization = false;
                         else if (string.Compare(args[i + 1], "all", true) == 0)
                         {
-                            Build = false;
-                            RunTests = false;
-                            RestorePackages = false;
-                            GetProjectsFromDXVCS = false;
-                            EnvironmentInitialization = false;
+                            DisableAllSteps();
                         }
                         else
                             break;
@@ -55,9 +53,28 @@ namespace CoreClrBuilder
                     }
                 }
                 else if (string.Compare(args[i], "-remove_projects", true) == 0 || string.Compare(args[i], "-rm", true) == 0) {
+                    DisableAllSteps();
                     RemoveProjectsDirectories = true;
                 }
+                else if (string.Compare(args[i], "-copy", true) == 0 && i < args.Length - 1)
+                {
+                    DisableAllSteps();
+                    CopyPath = args[i + 1];
+                    CopyDirs = true;
+                }
+                else if (string.Compare(args[i], "-get", true) == 0)
+                {
+                    DisableAllSteps();
+                    GetProjectsFromDXVCS = true;
+                }
             }
+        }
+        void DisableAllSteps() {
+            Build = false;
+            RunTests = false;
+            RestorePackages = false;
+            GetProjectsFromDXVCS = false;
+            EnvironmentInitialization = false;
         }
     }
 }

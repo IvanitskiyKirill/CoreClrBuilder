@@ -16,6 +16,7 @@ namespace CoreClrBuilder
         public string NunitTestResultFileName { get; private set; }
         public string BuildConfiguration { get; private set; }
         public string BuildFramework { get; private set; }
+        public string ProjectName { get; private set; }
         public CoreClrProject(string vssPath, string localPath, string releaseVersion, string buildConfiguration, string framework)
         {
             this.VSSPath = vssPath;
@@ -26,6 +27,7 @@ namespace CoreClrBuilder
             if (paths.Length > 0)
             {
                 string projectName = paths[paths.Length - 1];
+                ProjectName = projectName;
                 this.NugetPackageName = string.Format("{0}.{1}.nupkg", projectName, releaseVersion);
                 this.TestResultFileName = string.Format("{0}-TestResult.xml", projectName);
                 this.NunitTestResultFileName = string.Format("{0}-NunitTestResult.xml", projectName);

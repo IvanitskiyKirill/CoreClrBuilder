@@ -28,6 +28,7 @@ namespace CoreClrBuilder
 ""dnx451"" or ""dotnet"" or ""dnxcore50"" - target framework
 ""-branch"" or ""-b"" - release branch (Example: -branch 15.2)
 ""-remove_projects"" or ""-rm""- remove direcories with projects
+""-copy"" [to]
 ""exclude_steps: <steps>"" or ""ex: <steps>""- (Sample: exclude_steps: get restore test)
     Availible steps to exclude:
     ""all"" - all steps
@@ -36,6 +37,7 @@ namespace CoreClrBuilder
     ""restore"" - restore packages for projects
     ""build"" - get from DXVCS, restore packages and build projects
     ""test"" - run tests
+    
 ");
                 return 0;
             }
