@@ -16,8 +16,7 @@ namespace CoreClrBuilder
         XmlTextWriter tmpXml;
         StringBuilder taskBreakingLog = new StringBuilder();
         ProductInfo productInfo;
-        CommandBuilder builder;
-        EnvironmentSettings envSettings;
+        CommandFactory factory;
         StepSettings stepSettings;
         public int ExecuteTasks(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings)
         {
@@ -26,22 +25,13 @@ namespace CoreClrBuilder
             int result = 0;
             try
             {
-                this.stepSettings = stepSettings;
-                this.envSettings = envSettings;
-                builder = new CommandBuilder(this.envSettings);
-
-                result += InstallEnvironment(dnxSettings);
-
-                if (stepSettings.CopyDirs)
-                    CopyProjects(stepSettings.CopyPath, true);
-
-                if (stepSettings.RemoveProjectsDirectories)
-                    RemoveProjects();
-
-                if (result == 0)
-                    result += BuildProjects();
-                if (result == 0 && stepSettings.RunTests)
-                    result += RunTests();
+                IEnumerable<ICommand> commands = PrepareCommands(dnxSettings, stepSettings, envSettings, result);
+                foreach (var command in commands)
+                {
+                    result += DoWork(command);
+                    if (result > 0)
+                        break;
+                }
             }
             catch (Exception)
             {
@@ -58,156 +48,43 @@ namespace CoreClrBuilder
             return result > 0 ? 1 : 0;
         }
 
-        private void CopyProjects(string copyPath, bool copySubDirs)
+        internal IEnumerable<ICommand> PrepareCommands(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings, int result)
         {
-            foreach (var item in productInfo.Projects)
-            {
-                if (Directory.Exists(item.LocalPath))
-                {
-                    Console.WriteLine("Begin copy dir {0} ", item.LocalPath);
-                    DirectoryCopy(item.LocalPath, Path.Combine(copyPath, item.LocalPath), true);
-                }
-                else
-                {
-                    Console.WriteLine("dir {0} doesn't exist", item.LocalPath);
-                }
-            }
-        }
-        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
-        {
-            // Get the subdirectories for the specified directory.
-            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
-            DirectoryInfo[] dirs = dir.GetDirectories();
-
-            if (!dir.Exists)
-            {
-                Console.WriteLine(
-                    "Source directory does not exist or could not be found: "
-                    + sourceDirName);
-                return;
-            }
-
-            // If the destination directory doesn't exist, create it. 
-            if (!Directory.Exists(destDirName))
-            {
-                Directory.CreateDirectory(destDirName);
-            }
-
-            // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files)
-            {
-                string temppath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(temppath, false);
-            }
-
-            // If copying subdirectories, copy them and their contents to new location. 
-            if (copySubDirs)
-            {
-                foreach (DirectoryInfo subdir in dirs)
-                {
-                    string temppath = Path.Combine(destDirName, subdir.Name);
-                    DirectoryCopy(subdir.FullName, temppath, copySubDirs);
-                }
-            }
-        }
-
-        private void RemoveProjects()
-        {
-            Console.WriteLine("Remove projects");
-            foreach (var item in productInfo.Projects)
-            {
-                if (Directory.Exists(item.LocalPath))
-                {
-                    DirectoryInfo dirInfo = new DirectoryInfo(item.LocalPath);
-                    setAttributesNormal(dirInfo);
-                    Console.WriteLine("Remove dir {0}", item.LocalPath);
-                    Directory.Delete(item.LocalPath, true);
-                }
-                else
-                {
-                    Console.WriteLine("dir {0} doesn't exist", item.LocalPath);
-                }
-            }
-        }
-
-        void setAttributesNormal(DirectoryInfo dir)
-        {
-            foreach (DirectoryInfo subDir in dir.GetDirectories())
-                setAttributesNormal(subDir);
-            foreach (FileInfo fileInfo in dir.GetFiles())
-                fileInfo.Attributes = FileAttributes.Normal;
-
-        }
-
-        int InstallEnvironment(DNXSettings dnxsettings)
-        {
-            int result = 0;
-            if (stepSettings.EnvironmentInitialization)
-                result = DoWork(new Command[] {
-                    builder.GetProductConfig(),
-                    builder.DownloadDNVM(),
-                    builder.InstallDNX(dnxsettings) });
-
-            envSettings.InitializeDNX();
-            productInfo = new ProductInfo(envSettings.ProductConfig, dnxsettings.Framework);
+            this.stepSettings = stepSettings;
+            productInfo = new ProductInfo(envSettings.ProductConfig, dnxSettings.Framework);
             envSettings.SetBranchVersion(productInfo.ReleaseVersion);
 
+            factory = new CommandFactory(envSettings, productInfo);
+            List<ICommand> commands = new List<ICommand>();
+
             if (stepSettings.EnvironmentInitialization)
-                result += DoWork(builder.GetNugetConfig());
-            return result;
+                commands.Add(factory.InstallEnvironment(dnxSettings));
+
+            if (stepSettings.Build || stepSettings.RunTests)
+                envSettings.FindPathToDNX();
+
+            if (stepSettings.CopyDirs)
+                commands.Add(factory.CopyProjects(stepSettings.CopyPath, true));
+
+            if (stepSettings.RemoveProjectsDirectories)
+                commands.Add(factory.RemoveProjects());
+
+            if (stepSettings.GetProjectsFromDXVCS)
+                commands.Add(factory.GetProjectsFromVCS());
+
+            if (stepSettings.Build)
+                commands.Add(factory.BuildProjects());
+
+            if (stepSettings.RunTests)
+                commands.Add(factory.RunTests());
+            return commands;
         }
-        int BuildProjects()
+        
+        int DoWork(ICommand command)
         {
-            List<Command> commands = new List<Command>();
-            foreach (var project in productInfo.Projects)
-            {
-                if (stepSettings.GetProjectsFromDXVCS || stepSettings.Build)
-                    commands.Add(builder.GetProject(project));
-                if (stepSettings.RestorePackages || stepSettings.Build)
-                    commands.Add(builder.Restore(project));
-                if (stepSettings.Build)
-                {
-                    commands.Add(builder.Build(project));
-                    commands.Add(builder.InstallPackage(project));
-                }
-            }
-            return DoWork(commands);
+            return DoWork(new ICommand[] { command });
         }
-        int RunTests()
-        {
-            int result = DoWork(builder.GetFromVCS(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort)));
-            XslCompiledTransform xslt = new XslCompiledTransform();
-            xslt.Load("NUnitXml.xslt");
-
-            List<string> nUnitTestFiles = new List<string>();
-            foreach (var project in productInfo.Projects)
-            {
-                string xUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
-                string nUnitResults = Path.Combine(envSettings.WorkingDir, project.NunitTestResultFileName);
-
-                if (File.Exists(xUnitResults))
-                    File.Delete(xUnitResults);
-
-                result += DoWork(builder.RunTests(project));
-
-                if (File.Exists(nUnitResults))
-                    File.Delete(nUnitResults);
-                if (File.Exists(xUnitResults))
-                {
-                    xslt.Transform(xUnitResults, nUnitResults);
-                    nUnitTestFiles.Add(nUnitResults);
-                }
-            }
-
-            NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
-            return result;
-        }
-        int DoWork(Command command)
-        {
-            return DoWork(new Command[] { command });
-        }
-        int DoWork(IEnumerable<Command> commands)
+        int DoWork(IEnumerable<ICommand> commands)
         {
             //string cclistner = Environment.GetEnvironmentVariable("CCNetListenerFile", EnvironmentVariableTarget.Process);
             //string cclistner = "output.xml";
@@ -292,6 +169,42 @@ namespace CoreClrBuilder
             catch
             {
                 return String.Empty;
+            }
+        }
+    }
+
+    class RemoveProjectsCommand : ICommand
+    {
+        readonly ProductInfo productInfo;
+        public RemoveProjectsCommand(ProductInfo productInfo)
+        {
+            this.productInfo = productInfo;
+        }
+
+        void SetAttributesNormal(DirectoryInfo dir)
+        {
+            foreach (DirectoryInfo subDir in dir.GetDirectories())
+                SetAttributesNormal(subDir);
+            foreach (FileInfo fileInfo in dir.GetFiles())
+                fileInfo.Attributes = FileAttributes.Normal;
+
+        }
+        public void Execute()
+        {
+            Console.WriteLine("Remove projects");
+            foreach (var item in productInfo.Projects)
+            {
+                if (Directory.Exists(item.LocalPath))
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(item.LocalPath);
+                    SetAttributesNormal(dirInfo);
+                    Console.WriteLine("Remove dir {0}", item.LocalPath);
+                    Directory.Delete(item.LocalPath, true);
+                }
+                else
+                {
+                    Console.WriteLine("dir {0} doesn't exist", item.LocalPath);
+                }
             }
         }
     }

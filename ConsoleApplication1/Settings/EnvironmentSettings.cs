@@ -22,23 +22,9 @@ namespace CoreClrBuilder
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
-
-            InitBranchVersion(args);
         }
 
-        void InitBranchVersion(string[] args)
-        {
-            for (int i = 0; i < args.Length; i++)
-            {
-                if ((string.Compare(args[i], "-branch", true) == 0 || string.Compare(args[i], "-b", true) == 0) && i < args.Length - 1)
-                {
-                    SetBranchVersion(args[i + 1]);
-                    break;
-                }
-            }
-        }
-
-        public void InitializeDNX()
+        public void FindPathToDNX()
         {
             string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
             foreach (var path in paths)

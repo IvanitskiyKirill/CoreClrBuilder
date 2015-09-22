@@ -10,23 +10,26 @@ namespace CoreClrBuilder
             if (args.Length == 1 && (args[0] == "-h" || args[0] == "-help"))
             {
                 Console.Write(@"
-""-u"" - use unstable version of dnx
-""-r"" - runtime clr or coreclr
-""-arch"" - x64 or x86
-""-v"" - version of dnx (Example: 1.0.0-beta4-11566)
-""dnx451"" or ""dotnet"" or ""dnxcore50"" - target framework
-""-branch"" or ""-b"" - release branch (Example: -branch 15.2)
-""-remove_projects"" or ""-rm""- remove direcories with projects
-""-copy"" [to]
-""exclude_steps: <steps>"" or ""ex: <steps>""- (Sample: exclude_steps: get restore test)
-    Availible steps to exclude:
-    ""all"" - all steps
-    ""env_init"" - dnx and dnvm installation, getting nuget.config, product.xml
-    ""get"" - get projects from DXVCS    
-    ""restore"" - restore packages for projects
-    ""build"" - get from DXVCS, restore packages and build projects
-    ""test"" - run tests
-    
+CoreClrBuilder.exe [-config:<name>] [env_init] [remove] [get] [build] [test]
+    env_init [-u] [-r <runtime>] [-arch <name>] [-v <version>]
+    build [dnx451] [dotnet] [dnxcore50] 
+
+-config:<config_name> - configuration file with projects and project settings
+
+env_init - dnx and dnvm installation, getting nuget.config, product.xml
+    -u - use unstable version of dnx
+    -r - runtime clr or coreclr
+    -arch - x64 or x86
+    -v - version of dnx (Example: 1.0.0-beta4-11566)
+
+remove - remove direcories with projects
+
+get - get projects from DXVCS    
+
+build - restore packages and build projects
+    dnx451 or dotnet or dnxcore50 - target framework
+
+test - run tests
 ");
                 return 0;
             }
