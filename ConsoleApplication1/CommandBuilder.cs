@@ -29,7 +29,10 @@ namespace CoreClrBuilder
     class InstallPackageCommand : Command
     {
         public InstallPackageCommand(EnvironmentSettings settings, CoreClrProject project) :
-            base(settings.DNU, string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, settings.UserProfile), "install package", settings.WorkingDir)
+            base(settings.DNU,
+                PlatformPathsCorrector.Inst.Correct(string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, settings.UserProfile), Platform.Windows), 
+                "install package", 
+                settings.WorkingDir)
         { }
     }
     class RunTestsCommand : Command
@@ -41,9 +44,7 @@ namespace CoreClrBuilder
     class GetFromVCSCommand : Command
     {
         public GetFromVCSCommand(string remotePath, string workingDir) : 
-            this(remotePath, string.Empty, workingDir)
-        { }
-        public GetFromVCSCommand(string remotePath, string localPath, string workingDir) : this(remotePath, localPath, string.Empty, workingDir)
+            this(remotePath, string.Empty, string.Empty, workingDir)
         { }
         public GetFromVCSCommand(string remotePath, string localPath, string comment, string workingDir)
         {
@@ -91,13 +92,17 @@ namespace CoreClrBuilder
     {
         string workingDir;
         public GetNugetConfigCommand(EnvironmentSettings settings, DNXSettings dnxsettings) :
-            base(string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion), @"Win\", "get nuget.config", settings.WorkingDir)
+            base(
+                string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion),
+                PlatformPathsCorrector.Inst.Correct(@"Win\", Platform.Windows), 
+                "get nuget.config", 
+                settings.WorkingDir)
         {
             workingDir = settings.WorkingDir;
         }
         public override void Execute()
         {
-            if (!File.Exists(Path.Combine(workingDir, @"Win\NuGet.Config")))
+            if (!File.Exists(Path.Combine(workingDir, PlatformPathsCorrector.Inst.Correct(@"Win\NuGet.Config", Platform.Windows))))
                 base.Execute();
         }
     }

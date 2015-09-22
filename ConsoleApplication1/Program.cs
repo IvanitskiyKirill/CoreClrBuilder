@@ -5,7 +5,7 @@ namespace CoreClrBuilder
 {
     class Program
     {
-        static int Main(string[] args)
+        private static int StartMain(string[] args)
         {
             if (args.Length == 1 && (args[0] == "-h" || args[0] == "-help"))
             {
@@ -36,6 +36,7 @@ test - run tests
             StepSettings stepSettings = new StepSettings(args);
             DNXSettings dnxSettings = new DNXSettings(args);
             EnvironmentSettings envSettings = new EnvironmentSettings(args);
+            Console.WriteLine("Init Settings");
             if (!File.Exists(envSettings.ProductConfig) && string.IsNullOrEmpty(envSettings.BranchVersion))
             {
                 Console.Write("Please specify branch version (Example: -branch 15.2) or put Product.xml near CoreClrBuilder.exe");
@@ -44,6 +45,35 @@ test - run tests
             Executor executor = new Executor();
             return executor.ExecuteTasks(dnxSettings, stepSettings, envSettings);
         }
-    }
 
+        static int Main(string[] args)
+        {
+            try
+            {
+                AppDomain.CurrentDomain.UnhandledException += (sender, e)
+                => FatalExceptionObject(e.ExceptionObject);
+
+                //Application.ThreadException += (sender, e)
+                //=> FatalExceptionHandler.Handle(e.Exception);
+
+                return StartMain(args);
+            }
+            catch (Exception huh)
+            {
+                FatalExceptionObject(huh);
+                return 1;
+            }
+        }
+
+        static void FatalExceptionObject(object exceptionObject)
+        {
+            var huh = exceptionObject as Exception;
+            if (huh == null)
+                Console.WriteLine("Unhandled exception doesn't derive from System.Exception: " + exceptionObject.ToString());
+            else {
+                Console.WriteLine(huh.ToString());
+            }
+            //FatalExceptionHandler(huh);
+        }
+    }
 }

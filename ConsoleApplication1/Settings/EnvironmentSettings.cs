@@ -3,6 +3,11 @@ using System.IO;
 
 namespace CoreClrBuilder
 {
+    enum Platform {
+        Windows,
+        Unix,
+        Unknown
+    }
     class EnvironmentSettings
     {
         public string DNX { get; private set; }
@@ -15,24 +20,62 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
+        public Platform Platform { get; private set; }
+
         public EnvironmentSettings(string[] args)
         {
-            DXVCSGet = "DXVCSGet.exe";
+            Platform = DetectPlatform();
+            PlatformPathsCorrector.Inst.Platform = Platform;
+
             WorkingDir = Environment.CurrentDirectory;
-            UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-            DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
+
+            if (Platform == Platform.Windows)
+                WindowsInit();
+            else
+                UnixInit();
         }
 
+        private void UnixInit()
+        {
+            //TODO KI: after implement service add script calling
+            DNVM = @"~/.dnx/dnvm/dnvm.sh";
+        }
+
+        private void WindowsInit()
+        {
+            DXVCSGet = "DXVCSGet.exe";
+            UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+            DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
+        }
+
+        private Platform DetectPlatform()
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    return Platform.Windows;
+                case PlatformID.Unix:
+                    return Platform.Unix;
+                default:
+                    return Platform.Unknown;
+            }
+        }
         public void FindPathToDNX()
         {
-            string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
-            foreach (var path in paths)
+            if (Platform == Platform.Windows)
             {
-                if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd")))
+                string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
+                foreach (var path in paths)
                 {
-                    DNX = Path.Combine(path, "dnx.exe");
-                    DNU = Path.Combine(path, "dnu.cmd");
+                    if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd")))
+                    {
+                        DNX = Path.Combine(path, "dnx.exe");
+                        DNU = Path.Combine(path, "dnu.cmd");
+                    }
                 }
             }
         }

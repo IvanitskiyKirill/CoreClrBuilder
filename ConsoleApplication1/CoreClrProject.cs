@@ -13,18 +13,18 @@
         public string ProjectName { get; private set; }
         public CoreClrProject(string vssPath, string localPath, string releaseVersion, string buildConfiguration, string framework)
         {
-            this.VSSPath = vssPath;
-            this.LocalPath = localPath;
-            this.BuildConfiguration = buildConfiguration;
-            this.BuildFramework = framework;
-            string[] paths = localPath.Trim('\\').Split('\\');
+            VSSPath = vssPath;
+            LocalPath = PlatformPathsCorrector.Inst.Correct(localPath, Platform.Windows);
+            BuildConfiguration = buildConfiguration;
+            BuildFramework = framework;
+            string[] paths = LocalPath.Trim(PlatformPathsCorrector.Inst.PlatformSeparator).Split(PlatformPathsCorrector.Inst.PlatformSeparator);
             if (paths.Length > 0)
             {
                 string projectName = paths[paths.Length - 1];
                 ProjectName = projectName;
-                this.NugetPackageName = string.Format("{0}.{1}.nupkg", projectName, releaseVersion);
-                this.TestResultFileName = string.Format("{0}-TestResult.xml", projectName);
-                this.NunitTestResultFileName = string.Format("{0}-NunitTestResult.xml", projectName);
+                NugetPackageName = string.Format("{0}.{1}.nupkg", projectName, releaseVersion);
+                TestResultFileName = string.Format("{0}-TestResult.xml", projectName);
+                NunitTestResultFileName = string.Format("{0}-NunitTestResult.xml", projectName);
             }
         }
     }
