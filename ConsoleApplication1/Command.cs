@@ -53,7 +53,7 @@ namespace CoreClrBuilder
         string fileName;
         string args;
         string comment;
-
+        protected virtual bool ThrowWrongExitCodeException { get { return true; } }
 
         protected Command() { }
         public Command(string fileName, string args, string comment, string workingDir)
@@ -99,7 +99,7 @@ namespace CoreClrBuilder
                     outputErrors.Add(strLogContents);
             }
             process.WaitForExit();
-            if (process.ExitCode != 0 || outputErrors.Count != 0)
+            if (ThrowWrongExitCodeException && (process.ExitCode != 0 || outputErrors.Count != 0))
                 throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
             outputErrors.Clear();
             errorReader = null;
