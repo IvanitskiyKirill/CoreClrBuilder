@@ -42,12 +42,13 @@ namespace CoreClrBuilder
                     isDefaultState = false;
                     RemoveProjectsDirectories = true;
                 }
-                //else if (string.Compare(args[i], "-copy", true) == 0 && i < args.Length - 1)
-                //{
-                //    DisableAllSteps();
-                //    CopyPath = args[i + 1];
-                //    CopyDirs = true;
-                //}
+                else if (string.Compare(args[i], "copy", true) == 0 && i < args.Length - 1)
+                {
+                    isDefaultState = false;
+                    DisableAllSteps();
+                    CopyPath = args[i + 1];
+                    CopyDirs = true;
+                }
             }
             if (isDefaultState)
                 InitDefaultState();

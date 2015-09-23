@@ -39,7 +39,8 @@ namespace CoreClrBuilder
         private void UnixInit()
         {
             //TODO KI: after implement service add script calling
-            DNVM = @"~/.dnx/dnvm/dnvm.sh";
+            UserProfile = "/home/user";
+            DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
         }
 
         private void WindowsInit()
@@ -77,6 +78,10 @@ namespace CoreClrBuilder
                         DNU = Path.Combine(path, "dnu.cmd");
                     }
                 }
+            }
+            else {
+                DNU = "dnu";
+                DNX = "dnx";
             }
         }
         public void SetBranchVersion(string releaseVersion) {

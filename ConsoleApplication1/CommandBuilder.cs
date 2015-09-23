@@ -7,14 +7,14 @@ namespace CoreClrBuilder
 {
     class GetProjectCommand : Command
     {
-        public GetProjectCommand(EnvironmentSettings settings, CoreClrProject project) 
+        public GetProjectCommand(EnvironmentSettings settings, CoreClrProject project)
             : base(settings.DXVCSGet, string.Format("vcsservice.devexpress.devx {0} {1}", project.VSSPath, project.LocalPath), "get from VCS", settings.WorkingDir)
         {
         }
     }
     class RestoreCommand : Command
     {
-        public RestoreCommand(EnvironmentSettings settings, CoreClrProject project) : 
+        public RestoreCommand(EnvironmentSettings settings, CoreClrProject project) :
             base(settings.DNU, string.Format("restore {0}", project.LocalPath), "call dnu restore", settings.WorkingDir) { }
     }
     class BuildCommand : Command {
@@ -28,12 +28,11 @@ namespace CoreClrBuilder
     }
     class InstallPackageCommand : Command
     {
-        public InstallPackageCommand(EnvironmentSettings settings, CoreClrProject project) :
-            base(settings.DNU,
-                PlatformPathsCorrector.Inst.Correct(string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, settings.UserProfile), Platform.Windows), 
-                "install package", 
-                settings.WorkingDir)
-        { }
+        public InstallPackageCommand(EnvironmentSettings settings, CoreClrProject project)
+        {
+            string args = PlatformPathsCorrector.Inst.Correct(string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, settings.UserProfile), Platform.Windows);
+            Init(settings.DNU, args, "install package", settings.WorkingDir);
+        }
     }
     class RunTestsCommand : Command
     {
@@ -43,7 +42,7 @@ namespace CoreClrBuilder
     }
     class GetFromVCSCommand : Command
     {
-        public GetFromVCSCommand(string remotePath, string workingDir) : 
+        public GetFromVCSCommand(string remotePath, string workingDir) :
             this(remotePath, string.Empty, string.Empty, workingDir)
         { }
         public GetFromVCSCommand(string remotePath, string localPath, string comment, string workingDir)
@@ -84,8 +83,8 @@ namespace CoreClrBuilder
         }
     }
     class InstallDNXCommand : Command {
-        public InstallDNXCommand(EnvironmentSettings settings, DNXSettings dnxsettings) : 
-            base (settings.DNVM, dnxsettings.CreateArgsForDNX(), "Install dnx", settings.WorkingDir)
+        public InstallDNXCommand(EnvironmentSettings settings, DNXSettings dnxsettings) :
+            base(settings.DNVM, dnxsettings.CreateArgsForDNX(), "Install dnx", settings.WorkingDir)
         { }
     }
     class GetNugetConfigCommand : GetFromVCSCommand
@@ -94,8 +93,8 @@ namespace CoreClrBuilder
         public GetNugetConfigCommand(EnvironmentSettings settings, DNXSettings dnxsettings) :
             base(
                 string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion),
-                PlatformPathsCorrector.Inst.Correct(@"Win\", Platform.Windows), 
-                "get nuget.config", 
+                PlatformPathsCorrector.Inst.Correct(@"Win\", Platform.Windows),
+                "get nuget.config",
                 settings.WorkingDir)
         {
             workingDir = settings.WorkingDir;
@@ -172,6 +171,12 @@ namespace CoreClrBuilder
             }
         }
     }
+    class UnixGrantAccessCommand : Command
+    {
+        public UnixGrantAccessCommand(string path, string workingDir) : base("chmod", "-R 777 " + path, "grant access to folder " + path, workingDir)
+        {
+        }
+    }
     class CommandFactory
     {
         EnvironmentSettings envSettings;
@@ -202,6 +207,8 @@ namespace CoreClrBuilder
             BatchCommand batchCommand = new BatchCommand();
             foreach (var project in productInfo.Projects)
             {
+                if (envSettings.Platform == Platform.Unix)
+                    batchCommand.Add(new UnixGrantAccessCommand(project.LocalPath, envSettings.WorkingDir));
                 batchCommand.Add(new RestoreCommand(envSettings, project));
                 batchCommand.Add(new BuildCommand(envSettings, project));
                 batchCommand.Add(new InstallPackageCommand(envSettings, project));
@@ -211,7 +218,8 @@ namespace CoreClrBuilder
         public ICommand RunTests()
         {
             BatchCommand batchCommand = new BatchCommand();
-            batchCommand.Add(new GetFromVCSCommand(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort), envSettings.WorkingDir));
+            if (envSettings.Platform == Platform.Windows)
+                batchCommand.Add(new GetFromVCSCommand(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort), envSettings.WorkingDir));
             batchCommand.Add(new ActionCommand("Tests clear", () =>
             {
                 foreach (var project in productInfo.Projects)
