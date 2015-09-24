@@ -71,11 +71,15 @@ namespace CoreClrBuilder
             if (stepSettings.GetProjectsFromDXVCS)
                 commands.Add(factory.GetProjectsFromVCS());
 
-            if (stepSettings.Build)
+            if (stepSettings.Build) 
                 commands.Add(factory.BuildProjects());
 
             if (stepSettings.RunTests)
                 commands.Add(factory.RunTests());
+
+            if (stepSettings.CollectArtifats)
+                commands.Add(factory.CollectArtifacts(envSettings.BuildArtifactsFolder, dnxSettings.Framework));
+
             return commands;
         }
         

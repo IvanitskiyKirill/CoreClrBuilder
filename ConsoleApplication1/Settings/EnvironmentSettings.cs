@@ -11,6 +11,7 @@ namespace CoreClrBuilder
     class EnvironmentSettings
     {
         public string DNX { get; private set; }
+
         public string DNU { get; private set; }
         public string DNVM { get; private set; }
         public string DXVCSGet { get; private set; }
@@ -21,6 +22,7 @@ namespace CoreClrBuilder
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
         public Platform Platform { get; private set; }
+        public string BuildArtifactsFolder { get; private set; }
 
         public EnvironmentSettings(string[] args)
         {
@@ -29,6 +31,7 @@ namespace CoreClrBuilder
 
             WorkingDir = Environment.CurrentDirectory;
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
+            BuildArtifactsFolder = @"\\corp\builds\testbuilds\testbuild.v15.2 Portable";
 
             if (Platform == Platform.Windows)
                 WindowsInit();

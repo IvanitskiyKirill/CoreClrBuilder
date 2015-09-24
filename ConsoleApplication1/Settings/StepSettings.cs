@@ -11,6 +11,7 @@ namespace CoreClrBuilder
         public bool RemoveProjectsDirectories { get; private set; }
         public bool CopyDirs { get; private set; }
         public string CopyPath { get; private set; }
+        public bool CollectArtifats { get; private set; }
 
         public StepSettings(string [] args)
         {
@@ -49,6 +50,10 @@ namespace CoreClrBuilder
                     CopyPath = args[i + 1];
                     CopyDirs = true;
                 }
+                else if (string.Compare(args[i], "collect_artifatcs", true) == 0)
+                {
+                    CollectArtifats = true;
+                }
             }
             if (isDefaultState)
                 InitDefaultState();
@@ -63,6 +68,7 @@ namespace CoreClrBuilder
 
             RemoveProjectsDirectories = false;
             CopyDirs = false;
+            CollectArtifats = false;
         }
 
         void DisableAllSteps() {
