@@ -71,10 +71,23 @@ namespace CoreClrBuilder
     class DownloadDNVMCommand : Command
     {
         string dnvm;
-        public DownloadDNVMCommand(EnvironmentSettings settings) :
-            base("powershell.exe", "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"", "Download dnvm", settings.WorkingDir)
+        public DownloadDNVMCommand(EnvironmentSettings settings) 
+            
         {
             dnvm = settings.DNVM;
+            string executableFile;
+            string args;
+            if (settings.Platform == Platform.Windows)
+            {
+                executableFile = "powershell.exe";
+                args = "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"";
+            }
+            else
+            {
+                executableFile = "bash";
+                args = "dnxInstall.sh";
+            }
+            Init(executableFile, args, "Download dnvm", settings.WorkingDir);
         }
 
         public override void Execute()
@@ -178,6 +191,37 @@ namespace CoreClrBuilder
         {
         }
     }
+    class CollectArtifactsCommand : ICommand
+    {
+        ProductInfo info;
+        string destFolder;
+        public CollectArtifactsCommand(ProductInfo info, string destFolder, string buildFramework)
+        {
+            this.info = info;
+            if (!string.IsNullOrEmpty(buildFramework))
+                this.destFolder = string.Format(@"{0}\{1}", destFolder, buildFramework);
+            else
+                this.destFolder = destFolder;
+        }
+        public void Execute()
+        {
+            if (Directory.Exists(destFolder))
+                Directory.Delete(destFolder, true);
+            Directory.CreateDirectory(destFolder);
+
+            foreach (var project in info.Projects)
+            {
+                string localPackagePath = PlatformPathsCorrector.Inst.Correct(string.Format(@"{0}\bin\{1}\{2}", project.LocalPath, project.BuildConfiguration, project.NugetPackageName), Platform.Windows);
+                if (File.Exists(localPackagePath))
+                {
+                    Console.WriteLine("Start copy package {0}", project.NugetPackageName);
+                    File.Copy(localPackagePath, destFolder + "\\" + project.NugetPackageName);
+                }
+                else
+                    Console.WriteLine("Package {0} doesn't exist", project.NugetPackageName);
+            }
+        }
+    }
     class CommandFactory
     {
         EnvironmentSettings envSettings;
@@ -191,10 +235,13 @@ namespace CoreClrBuilder
         }
         public ICommand InstallEnvironment(DNXSettings dnxsettings)
         {
-            return new BatchCommand(
-                new DownloadDNVMCommand(envSettings),
-                new InstallDNXCommand(envSettings, dnxsettings),
-                new GetNugetConfigCommand(envSettings, dnxsettings));
+            if (envSettings.Platform == Platform.Windows)
+                return new BatchCommand(
+                    new DownloadDNVMCommand(envSettings),
+                    new InstallDNXCommand(envSettings, dnxsettings),
+                    new GetNugetConfigCommand(envSettings, dnxsettings));
+            else
+                return new DownloadDNVMCommand(envSettings);
         }
         public ICommand GetProjectsFromVCS()
         {
@@ -264,6 +311,10 @@ namespace CoreClrBuilder
         public ICommand RemoveProjects()
         {
             return new RemoveProjectsCommand(productInfo);
+        }
+        internal ICommand CollectArtifacts(string destFolder, string buildFramework)
+        {
+            return new CollectArtifactsCommand(productInfo, destFolder, buildFramework);
         }
     }
 }

@@ -99,8 +99,10 @@ namespace CoreClrBuilder
                     outputErrors.Add(strLogContents);
             }
             process.WaitForExit();
-            if (ThrowWrongExitCodeException && (process.ExitCode != 0 || outputErrors.Count != 0))
+            if (ThrowWrongExitCodeException && process.ExitCode != 0)
+            {
                 throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
+            }
             outputErrors.Clear();
             errorReader = null;
             process = null;
