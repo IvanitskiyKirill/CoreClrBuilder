@@ -32,6 +32,7 @@ namespace CoreClrBuilder
             WorkingDir = Environment.CurrentDirectory;
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
             BuildArtifactsFolder = @"\\corp\builds\testbuilds\testbuild.v15.2 Portable";
+            DXVCSGet = "DXVCSGet.exe";
 
             if (Platform == Platform.Windows)
                 WindowsInit();
@@ -44,15 +45,14 @@ namespace CoreClrBuilder
             //TODO KI: after implement service add script calling
             UserProfile = "/home/user";
             DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
+            //DXVCSGet = "python3";
+            
         }
-
         private void WindowsInit()
         {
-            DXVCSGet = "DXVCSGet.exe";
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
         }
-
         private Platform DetectPlatform()
         {
             switch (Environment.OSVersion.Platform)

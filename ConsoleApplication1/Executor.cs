@@ -60,8 +60,10 @@ namespace CoreClrBuilder
 
             if (stepSettings.EnvironmentInitialization)
                 commands.Add(factory.InstallEnvironment(dnxSettings));
+
             if (stepSettings.Build || stepSettings.RunTests)
                 envSettings.FindPathToDNX();
+
             if (stepSettings.CopyDirs)
                 commands.Add(factory.CopyProjects(stepSettings.CopyPath, true));
 

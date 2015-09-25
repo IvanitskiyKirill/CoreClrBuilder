@@ -5,13 +5,6 @@ using System.Xml.Xsl;
 
 namespace CoreClrBuilder
 {
-    class GetProjectCommand : Command
-    {
-        public GetProjectCommand(EnvironmentSettings settings, CoreClrProject project)
-            : base(settings.DXVCSGet, string.Format("vcsservice.devexpress.devx {0} {1}", project.VSSPath, project.LocalPath), "get from VCS", settings.WorkingDir)
-        {
-        }
-    }
     class RestoreCommand : Command
     {
         public RestoreCommand(EnvironmentSettings settings, CoreClrProject project) :
@@ -43,21 +36,25 @@ namespace CoreClrBuilder
     }
     class GetFromVCSCommand : Command
     {
-        public GetFromVCSCommand(string remotePath, string workingDir) :
-            this(remotePath, string.Empty, string.Empty, workingDir)
+        public GetFromVCSCommand(EnvironmentSettings settings, string remotePath, string workingDir) :
+            this(settings, remotePath, string.Empty, string.Empty, workingDir)
         { }
-        public GetFromVCSCommand(string remotePath, string localPath, string comment, string workingDir)
+        public GetFromVCSCommand(EnvironmentSettings settings, string remotePath, string localPath, string comment, string workingDir)
         {
+            
             if (string.IsNullOrEmpty(remotePath))
                 throw new ArgumentNullException("remote path cannot be null");
-            Init("DXVCSGet.exe", string.Format("vcsservice.devexpress.devx {0} {1}", remotePath, localPath), comment, workingDir);
+            //if (settings.Platform == Platform.Windows)
+                Init(settings.DXVCSGet, string.Format("vcsservice.devexpress.devx {0} {1}", remotePath, localPath), comment, workingDir);
+            //else
+                //Init(settings.DXVCSGet, string.Format("vcsget.py {0} {1}", remotePath, localPath), comment, workingDir);
         }
     }
     class GetProductConfigCommand : GetFromVCSCommand
     {
         string productConfig;
         public GetProductConfigCommand(EnvironmentSettings settings) :
-            base(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/Product.xml", settings.BranchVersionShort), string.Empty, "Get Product.xml", settings.WorkingDir)
+            base(settings, string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/Product.xml", settings.BranchVersionShort), string.Empty, "Get Product.xml", settings.WorkingDir)
         {
             productConfig = settings.ProductConfig;
         }
@@ -75,18 +72,8 @@ namespace CoreClrBuilder
             
         {
             dnvm = settings.DNVM;
-            string executableFile;
-            string args;
-            if (settings.Platform == Platform.Windows)
-            {
-                executableFile = "powershell.exe";
-                args = "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"";
-            }
-            else
-            {
-                executableFile = "bash";
-                args = "dnxInstall.sh";
-            }
+            string executableFile = "powershell.exe";
+            string args = "-NoProfile -ExecutionPolicy unrestricted -Command \" &{$Branch = 'dev'; iex((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}\"";
             Init(executableFile, args, "Download dnvm", settings.WorkingDir);
         }
 
@@ -97,15 +84,24 @@ namespace CoreClrBuilder
         }
     }
     class InstallDNXCommand : Command {
-        public InstallDNXCommand(EnvironmentSettings settings, DNXSettings dnxsettings) :
-            base(settings.DNVM, dnxsettings.CreateArgsForDNX(), "Install dnx", settings.WorkingDir)
-        { }
+        public InstallDNXCommand(EnvironmentSettings settings, DNXSettings dnxsettings) 
+        {
+            if (settings.Platform == Platform.Windows)
+            {
+                Init(settings.DNVM, dnxsettings.CreateArgsForDNX(), "Install dnx", settings.WorkingDir);
+            }
+            else {
+                Init("bash", "dnxInstall.sh", "Install dnx", settings.WorkingDir);
+
+            }
+        }
     }
     class GetNugetConfigCommand : GetFromVCSCommand
     {
         string workingDir;
         public GetNugetConfigCommand(EnvironmentSettings settings, DNXSettings dnxsettings) :
             base(
+                settings,
                 string.Format("$/{0}/Win/NuGet.Config", settings.BranchVersion),
                 PlatformPathsCorrector.Inst.Correct(@"Win\", Platform.Windows),
                 "get nuget.config",
@@ -117,6 +113,20 @@ namespace CoreClrBuilder
         {
             if (!File.Exists(Path.Combine(workingDir, PlatformPathsCorrector.Inst.Correct(@"Win\NuGet.Config", Platform.Windows))))
                 base.Execute();
+        }
+    }
+    class GetInstallDNXScriptComamnd : GetFromVCSCommand
+    {
+        string workingDir;
+        public GetInstallDNXScriptComamnd(EnvironmentSettings settings, DNXSettings dnxsettings) :
+            base(
+                settings,
+                string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/dnxInstall.sh", settings.BranchVersionShort), 
+                @"./",
+                "get installation script",
+                settings.WorkingDir)
+        {
+            workingDir = settings.WorkingDir;
         }
     }
     class CopyProjectsCommand : ICommand
@@ -241,13 +251,16 @@ namespace CoreClrBuilder
                     new InstallDNXCommand(envSettings, dnxsettings),
                     new GetNugetConfigCommand(envSettings, dnxsettings));
             else
-                return new DownloadDNVMCommand(envSettings);
+                return new BatchCommand(
+                    new GetInstallDNXScriptComamnd(envSettings, dnxsettings),
+                    new InstallDNXCommand(envSettings, dnxsettings),
+                    new GetNugetConfigCommand(envSettings, dnxsettings));
         }
         public ICommand GetProjectsFromVCS()
         {
             BatchCommand batchCommand = new BatchCommand();
             foreach (var project in productInfo.Projects)
-                batchCommand.Add(new GetProjectCommand(envSettings, project));
+                batchCommand.Add(new GetFromVCSCommand(envSettings, project.VSSPath, project.LocalPath, string.Format("get {0} from VCS", project.ProjectName), envSettings.WorkingDir ));
             return batchCommand;
         }
         public ICommand BuildProjects()
@@ -267,7 +280,7 @@ namespace CoreClrBuilder
         {
             BatchCommand batchCommand = new BatchCommand();
             if (envSettings.Platform == Platform.Windows)
-                batchCommand.Add(new GetFromVCSCommand(string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort), envSettings.WorkingDir));
+                batchCommand.Add(new GetFromVCSCommand(envSettings, string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort), envSettings.WorkingDir));
             batchCommand.Add(new ActionCommand("Tests clear", () =>
             {
                 foreach (var project in productInfo.Projects)
