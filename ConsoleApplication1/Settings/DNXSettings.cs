@@ -7,7 +7,6 @@
         public string Architecture { get; set; }
         public string DNXVersion { get; set; }
         public string Framework { get; set; }
-
         public DNXSettings(string [] args)
         {
             UnstableChannel = false;

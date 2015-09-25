@@ -44,8 +44,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
-    <Compile Include="CommandBuilder.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="CommandFactory.cs" />
+    <Compile Include="Commands\ActionCommand.cs" />
+    <Compile Include="Commands\BatchCommand.cs" />
+    <Compile Include="Commands\BuildCommand.cs" />
+    <Compile Include="Commands\CollectArtifactsCommand.cs" />
+    <Compile Include="Commands\CopyProjectsCommand.cs" />
+    <Compile Include="Commands\DownloadDNVMCommand.cs" />
+    <Compile Include="Commands\GetFromVCSCommand.cs" />
+    <Compile Include="Commands\GetInstallDNXScriptComamnd.cs" />
+    <Compile Include="Commands\GetNugetConfigCommand.cs" />
+    <Compile Include="Commands\GetProductConfigCommand.cs" />
+    <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\InstallDNXCommand.cs" />
+    <Compile Include="Commands\InstallPackageCommand.cs" />
+    <Compile Include="Commands\RemoveProjectsCommand.cs" />
+    <Compile Include="Commands\RestoreCommand.cs" />
+    <Compile Include="Commands\RunTestsCommand.cs" />
+    <Compile Include="Commands\UnixGrantAccessCommand.cs" />
     <Compile Include="CoreClrProject.cs" />
     <Compile Include="Settings\EnvironmentSettings.cs" />
     <Compile Include="Executor.cs" />
@@ -62,9 +79,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Commands\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

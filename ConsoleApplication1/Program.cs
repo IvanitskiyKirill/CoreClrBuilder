@@ -53,27 +53,23 @@ test - run tests
                 AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => FatalExceptionObject(e.ExceptionObject);
 
-                //Application.ThreadException += (sender, e)
-                //=> FatalExceptionHandler.Handle(e.Exception);
-
                 return StartMain(args);
             }
-            catch (Exception huh)
+            catch (Exception e)
             {
-                FatalExceptionObject(huh);
+                FatalExceptionObject(e);
                 return 1;
             }
         }
 
         static void FatalExceptionObject(object exceptionObject)
         {
-            var huh = exceptionObject as Exception;
-            if (huh == null)
+            var e = exceptionObject as Exception;
+            if (e == null)
                 Console.WriteLine("Unhandled exception doesn't derive from System.Exception: " + exceptionObject.ToString());
             else {
-                Console.WriteLine(huh.ToString());
+                Console.WriteLine(e.ToString());
             }
-            //FatalExceptionHandler(huh);
         }
     }
 }

@@ -1,50 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace CoreClrBuilder
+namespace CoreClrBuilder.Commands
 {
-    public interface ICommand {
-        void Execute();
-    }
-    class BatchCommand : ICommand {
-
-        List<ICommand> commands;
-
-        public IEnumerable<ICommand> Commands { get { return commands; } }
-
-        public BatchCommand(params ICommand [] commands)
-        {
-            this.commands = new List<ICommand>(commands);
-        }
-
-        public void Add(ICommand command) {
-            commands.Add(command);
-        }
-
-        public void Execute()
-        {
-            foreach (var command in Commands)
-            {
-                command.Execute();
-            }
-        }
-    }
-    class ActionCommand : ICommand
-    {
-        Action action;
-        public string Name { get; private set; }
-        public ActionCommand(string name, Action action)
-        {
-            this.Name = name;
-            this.action = action;
-        }
-        public void Execute()
-        {
-            action();
-        }
-    }
     class Command : ICommand
     {
         StreamReader errorReader;
