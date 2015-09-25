@@ -52,7 +52,7 @@ namespace CoreClrBuilder
         {
             BatchCommand batchCommand = new BatchCommand();
             if (envSettings.Platform == Platform.Windows)
-                batchCommand.Add(new GetFromVCSCommand(envSettings, string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/NUnitXml.xslt", envSettings.BranchVersionShort), envSettings.WorkingDir));
+                batchCommand.Add(new GetFromVCSCommand(envSettings, string.Format("{0}/NUnitXml.xslt", envSettings.RemoteSettingsPath), envSettings.WorkingDir));
             batchCommand.Add(new ActionCommand("Tests clear", () =>
             {
                 foreach (var project in productInfo.Projects)

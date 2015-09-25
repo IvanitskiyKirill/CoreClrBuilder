@@ -35,7 +35,7 @@ test - run tests
             }
             StepSettings stepSettings = new StepSettings(args);
             DNXSettings dnxSettings = new DNXSettings(args);
-            EnvironmentSettings envSettings = new EnvironmentSettings(args);
+            EnvironmentSettings envSettings = new EnvironmentSettings();
             Console.WriteLine("Init Settings");
             if (!File.Exists(envSettings.ProductConfig) && string.IsNullOrEmpty(envSettings.BranchVersion))
             {

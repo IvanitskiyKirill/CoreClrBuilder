@@ -11,7 +11,6 @@ namespace CoreClrBuilder
     class EnvironmentSettings
     {
         public string DNX { get; private set; }
-
         public string DNU { get; private set; }
         public string DNVM { get; private set; }
         public string DXVCSGet { get; private set; }
@@ -24,7 +23,7 @@ namespace CoreClrBuilder
         public Platform Platform { get; private set; }
         public string BuildArtifactsFolder { get; private set; }
 
-        public EnvironmentSettings(string[] args)
+        public EnvironmentSettings()
         {
             Platform = DetectPlatform();
             PlatformPathsCorrector.Inst.Platform = Platform;

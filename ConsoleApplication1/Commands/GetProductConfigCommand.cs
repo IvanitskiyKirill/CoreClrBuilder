@@ -6,7 +6,7 @@ namespace CoreClrBuilder.Commands
     {
         string productConfig;
         public GetProductConfigCommand(EnvironmentSettings settings) :
-            base(settings, string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/Product.xml", settings.BranchVersionShort), string.Empty, "Get Product.xml", settings.WorkingDir)
+            base(settings, string.Format("{0}/Product.xml", settings.RemoteSettingsPath), string.Empty, "Get Product.xml", settings.WorkingDir)
         {
             productConfig = settings.ProductConfig;
         }

@@ -6,7 +6,7 @@
         public GetInstallDNXScriptComamnd(EnvironmentSettings settings, DNXSettings dnxsettings) :
             base(
                 settings,
-                string.Format("$/CCNetConfig/LocalProjects/{0}/BuildPortable/dnxInstall.sh", settings.BranchVersionShort),
+                string.Format("{0}/dnxInstall.sh", settings.RemoteSettingsPath),
                 @"./",
                 "get installation script",
                 settings.WorkingDir)
