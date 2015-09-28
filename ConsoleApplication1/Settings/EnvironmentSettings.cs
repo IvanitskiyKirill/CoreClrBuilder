@@ -20,13 +20,15 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
-        public Platform Platform { get; private set; }
+        public Platform Platform { get; internal set; }
         public string BuildArtifactsFolder { get; private set; }
 
         public EnvironmentSettings()
         {
             Platform = DetectPlatform();
             PlatformPathsCorrector.Inst.Platform = Platform;
+
+            Console.WriteLine("WORKING DIR: {0}", Environment.CurrentDirectory);
 
             WorkingDir = Environment.CurrentDirectory;
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
@@ -41,16 +43,15 @@ namespace CoreClrBuilder
 
         private void UnixInit()
         {
-            //TODO KI: after implement service add script calling
             UserProfile = "/home/user";
             DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
-            //DXVCSGet = "python3";
-            
         }
         private void WindowsInit()
         {
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
+            if(WorkingDir[WorkingDir.Length - 1] != '\\')
+                WorkingDir += "\\";
         }
         private Platform DetectPlatform()
         {

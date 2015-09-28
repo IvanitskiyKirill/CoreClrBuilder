@@ -9,8 +9,8 @@ namespace CoreClrBuilder
     class CommandFactory
     {
         EnvironmentSettings envSettings;
-        ProductInfo productInfo;
-        public CommandFactory(EnvironmentSettings settings, ProductInfo productInfo)
+        ProjectsInfo productInfo;
+        public CommandFactory(EnvironmentSettings settings, ProjectsInfo productInfo)
         {
             this.envSettings = settings;
             this.productInfo = productInfo;
@@ -51,8 +51,12 @@ namespace CoreClrBuilder
         public ICommand RunTests()
         {
             BatchCommand batchCommand = new BatchCommand();
-            if (envSettings.Platform == Platform.Windows)
-                batchCommand.Add(new GetFromVCSCommand(envSettings, string.Format("{0}/NUnitXml.xslt", envSettings.RemoteSettingsPath), envSettings.WorkingDir));
+            batchCommand.Add(new GetFromVCSCommand(
+                envSettings, 
+                Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
+                envSettings.WorkingDir,
+                "get NUnitXml.xslt",
+                envSettings.WorkingDir));
             batchCommand.Add(new ActionCommand("Tests clear", () =>
             {
                 foreach (var project in productInfo.Projects)

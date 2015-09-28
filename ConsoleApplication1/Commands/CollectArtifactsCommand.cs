@@ -5,9 +5,9 @@ namespace CoreClrBuilder.Commands
 {
     class CollectArtifactsCommand : ICommand
     {
-        ProductInfo info;
+        ProjectsInfo info;
         string destFolder;
-        public CollectArtifactsCommand(ProductInfo info, string destFolder, string buildFramework)
+        public CollectArtifactsCommand(ProjectsInfo info, string destFolder, string buildFramework)
         {
             this.info = info;
             if (!string.IsNullOrEmpty(buildFramework))

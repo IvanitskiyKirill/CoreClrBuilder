@@ -10,7 +10,8 @@
             }
             else
             {
-                Init("bash", "dnxInstall.sh", "Install dnx", settings.WorkingDir);
+
+                Init("bash", dnxsettings.CreateArgsForBashScript(), "Install dnx", settings.WorkingDir);
 
             }
         }

@@ -7,7 +7,7 @@ namespace CoreClrBuilder.Commands
 
         List<ICommand> commands;
 
-        public IEnumerable<ICommand> Commands { get { return commands; } }
+        public IList<ICommand> Commands { get { return commands; } }
 
         public BatchCommand(params ICommand[] commands)
         {

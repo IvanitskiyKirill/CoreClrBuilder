@@ -72,12 +72,14 @@
     <Compile Include="Executor.cs" />
     <Compile Include="NUnitMerger.cs" />
     <Compile Include="OutputLog.cs" />
-    <Compile Include="ProductInfo.cs" />
+    <Compile Include="ProjectsInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\DNXSettings.cs" />
     <Compile Include="Settings\StepSettings.cs" />
+    <Compile Include="Tests\CommandFactoryTests.cs" />
     <Compile Include="Tests\DNXSettingsTests.cs" />
+    <Compile Include="Tests\ProjectsInfoTests.cs" />
     <Compile Include="Tests\StepSettingsTests.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WrongExitCodeException.cs" />

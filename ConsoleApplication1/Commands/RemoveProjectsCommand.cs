@@ -9,8 +9,8 @@ namespace CoreClrBuilder.Commands
 {
     class RemoveProjectsCommand : ICommand
     {
-        readonly ProductInfo productInfo;
-        public RemoveProjectsCommand(ProductInfo productInfo)
+        readonly ProjectsInfo productInfo;
+        public RemoveProjectsCommand(ProjectsInfo productInfo)
         {
             this.productInfo = productInfo;
         }

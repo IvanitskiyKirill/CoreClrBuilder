@@ -5,10 +5,10 @@ namespace CoreClrBuilder.Commands
 {
     class CopyProjectsCommand : ICommand
     {
-        ProductInfo productInfo;
+        ProjectsInfo productInfo;
         string copyPath;
         bool copySubDirs;
-        public CopyProjectsCommand(ProductInfo productInfo, string copyPath, bool copySubDirs)
+        public CopyProjectsCommand(ProjectsInfo productInfo, string copyPath, bool copySubDirs)
         {
             this.productInfo = productInfo;
             this.copyPath = copyPath;

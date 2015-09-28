@@ -68,5 +68,12 @@ namespace CoreClrBuilder
                 args += " -u";
             return args;
         }
+        public string CreateArgsForBashScript() {
+            //string args = string.Format("dnxInstall.sh {0} {1}", Runtime, Architecture);
+            //if (UnstableChannel)
+            //    args += " " + UNSTABLE_FLAGE;
+            //return args;
+            return "dnxInstall.sh " + (UnstableChannel ? UNSTABLE_FLAGE : string.Empty);
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace CoreClrBuilder
     {
         XmlTextWriter tmpXml;
         StringBuilder taskBreakingLog = new StringBuilder();
-        ProductInfo productInfo;
+        ProjectsInfo productInfo;
         CommandFactory factory;
         StepSettings stepSettings;
         public int ExecuteTasks(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings)
@@ -50,7 +50,7 @@ namespace CoreClrBuilder
         internal IEnumerable<ICommand> PrepareCommands(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings, int result)
         {
             this.stepSettings = stepSettings;
-            productInfo = new ProductInfo(envSettings.ProductConfig, dnxSettings.Framework);
+            productInfo = new ProjectsInfo(envSettings.ProductConfig, dnxSettings.Framework);
             envSettings.SetBranchVersion(productInfo.ReleaseVersion);
 
             factory = new CommandFactory(envSettings, productInfo);
