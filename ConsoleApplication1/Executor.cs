@@ -26,9 +26,20 @@ namespace CoreClrBuilder
                 IEnumerable<ICommand> commands = PrepareCommands(dnxSettings, stepSettings, envSettings, result);
                 foreach (var command in commands)
                 {
-                    result += DoWork(command);
-                    if (result > 0)
-                        break;
+                    BatchCommand batchCommand = command as BatchCommand;
+                    if (batchCommand != null && batchCommand.IsBatchOfIndependedCommands)
+                    {
+                        foreach (var innerCommands in batchCommand.Commands)
+                        {
+                            result += DoWork(innerCommands);
+                        }
+                    }
+                    else
+                    {
+                        result += DoWork(command);
+                        if (result > 0)
+                            break;
+                    }
                 }
             }
             catch (Exception e)

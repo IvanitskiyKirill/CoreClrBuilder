@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreClrBuilder.Commands;
+using System;
 using System.IO;
 
 namespace CoreClrBuilder
@@ -14,7 +15,7 @@ CoreClrBuilder.exe [-config:<name>] [env_init] [remove] [get] [build] [test]
     env_init [-u] [-r <runtime>] [-arch <name>] [-v <version>]
     build [dnx451] [dotnet] [dnxcore50] 
 
--config:<config_name> - configuration file with projects and project settings
+-config:<config_name> - configuration file with projects and project settings (Not Supported yet)
 
 env_init - dnx and dnvm installation, getting nuget.config, product.xml
     -u - use unstable version of dnx
@@ -22,7 +23,7 @@ env_init - dnx and dnvm installation, getting nuget.config, product.xml
     -arch - x64 or x86
     -v - version of dnx (Example: 1.0.0-beta4-11566)
 
-remove - remove direcories with projects
+remove - remove direcories with projects (only for Windows)
 
 get - get projects from DXVCS    
 
@@ -37,10 +38,11 @@ test - run tests
             DNXSettings dnxSettings = new DNXSettings(args);
             EnvironmentSettings envSettings = new EnvironmentSettings();
             Console.WriteLine("Init Settings");
+
             if (!File.Exists(envSettings.ProductConfig) && string.IsNullOrEmpty(envSettings.BranchVersion))
             {
-                Console.Write("Please specify branch version (Example: -branch 15.2) or put Product.xml near CoreClrBuilder.exe");
-                return 0;
+                Console.Write("Please place Product.xml near CoreClrBuilder.exe");
+                return 1;
             }
             Executor executor = new Executor();
             return executor.ExecuteTasks(dnxSettings, stepSettings, envSettings);
