@@ -60,9 +60,8 @@ namespace CoreClrBuilder.Commands
                     outputErrors.Add(strLogContents);
             }
             process.WaitForExit();
-            if (ThrowWrongExitCodeException &&
-                (process.ExitCode != 0 && EnvironmentSettings.Platform == Platform.Windows && outputErrors.Count > 0 || 
-                process.ExitCode != 0 && EnvironmentSettings.Platform != Platform.Windows))
+            if ((EnvironmentSettings.Platform == Platform.Windows && (process.ExitCode != 0 || outputErrors.Count > 0)) ||
+                (EnvironmentSettings.Platform != Platform.Windows && process.ExitCode != 0))
             {
                 throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
             }
