@@ -15,7 +15,7 @@ namespace CoreClrBuilder.Commands
             this.copySubDirs = copySubDirs;
         }
 
-        void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);

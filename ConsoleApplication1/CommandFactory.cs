@@ -101,9 +101,9 @@ namespace CoreClrBuilder
         {
             return new RemoveProjectsCommand(productInfo);
         }
-        public ICommand CollectArtifacts(string destFolder, string buildFramework)
+        public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string buildFramework)
         {
-            return new CollectArtifactsCommand(productInfo, destFolder, buildFramework);
+            return new CollectArtifactsCommand(settings, productInfo, destFolder, buildFramework);
         }
     }
 }

@@ -5,14 +5,14 @@ namespace CoreClrBuilder
 
     [Flags]
     enum Steps : int {
-        NoSteps = 0x00,
-        EnvironmentInitialization = 0x01,
-        Build = 0x02,
-        RunTests = 0x04,
-        GetProjectsFromDXVCS = 0x08,
-        RemoveProjectsDirectories = 0x16,
-        CopyDirs = 0x32,
-        CollectArtifacts = 0x64,
+        NoSteps = 0,
+        EnvironmentInitialization = 1,
+        Build = 2,
+        RunTests = 4,
+        GetProjectsFromDXVCS = 8,
+        RemoveProjectsDirectories = 16,
+        CopyDirs = 32,
+        CollectArtifacts = 64,
     }
     class StepSettings
     {

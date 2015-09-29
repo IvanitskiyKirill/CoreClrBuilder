@@ -27,7 +27,7 @@ namespace CoreClrBuilder
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
         public string BuildArtifactsFolder { get; private set; }
-
+        public string PackagesPath { get; private set; }
         public EnvironmentSettings()
         {
             Platform = DetectPlatform();
@@ -50,12 +50,14 @@ namespace CoreClrBuilder
         {
             UserProfile = "/home/user";
             DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
+            PackagesPath = Path.Combine(UserProfile, @".dnx/packages");
         }
         private void WindowsInit()
         {
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
-            if(WorkingDir[WorkingDir.Length - 1] != '\\')
+            PackagesPath = Path.Combine(UserProfile, @".dnx\packages");
+            if (WorkingDir[WorkingDir.Length - 1] != '\\')
                 WorkingDir += "\\";
         }
         private static Platform DetectPlatform()
