@@ -71,7 +71,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.InstallEnvironment(dnxSettings));
 
             if (stepSettings.Build || stepSettings.RunTests)
-                envSettings.FindPathToDNX();
+                commands.Add(new ActionCommand("init dnx and dnu paths", new Action(envSettings.FindPathToDNX)));
 
             if (stepSettings.CopyDirs)
                 commands.Add(factory.CopyProjects(stepSettings.CopyPath, true));

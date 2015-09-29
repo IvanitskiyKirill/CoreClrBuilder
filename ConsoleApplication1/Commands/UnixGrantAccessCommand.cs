@@ -1,9 +1,20 @@
-﻿namespace CoreClrBuilder.Commands
+﻿using System;
+
+namespace CoreClrBuilder.Commands
 {
     class UnixGrantAccessCommand : Command
     {
-        public UnixGrantAccessCommand(string path, string workingDir) : base("chmod", "-R 777 " + path, "grant access to folder " + path, workingDir)
+        string path;
+        string workingDir;
+        public UnixGrantAccessCommand(string path, string workingDir)
         {
+            this.path = path;
+            this.workingDir = workingDir;
+        }
+
+        protected override void PrepareCommand()
+        {
+            Init("chmod", "-R 777 " + path, "grant access to folder " + path, workingDir);
         }
     }
 

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace CoreClrBuilder.Commands
 {
-    class Command : ICommand
+    abstract class Command : ICommand
     {
         StreamReader errorReader;
         List<string> outputErrors = new List<string>();
@@ -26,10 +26,12 @@ namespace CoreClrBuilder.Commands
             this.comment = comment;
             this.workingDir = workingDir;
         }
+        protected abstract void PrepareCommand();
         public virtual void Execute()
         {
+            PrepareCommand();
             if (!string.IsNullOrEmpty(comment))
-                OutputLog.LogText(comment);
+                OutputLog.LogTextNewLine(comment);
 
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();

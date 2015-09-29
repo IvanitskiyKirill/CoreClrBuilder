@@ -1,8 +1,17 @@
-﻿namespace CoreClrBuilder.Commands
+﻿using System;
+
+namespace CoreClrBuilder.Commands
 {
     class InstallDNXCommand : Command
     {
+        EnvironmentSettings settings;
+        DNXSettings dnxsettings;
         public InstallDNXCommand(EnvironmentSettings settings, DNXSettings dnxsettings)
+        {
+            this.settings = settings;
+            this.dnxsettings = dnxsettings;
+        }
+        protected override void PrepareCommand()
         {
             if (settings.Platform == Platform.Windows)
             {
@@ -10,9 +19,7 @@
             }
             else
             {
-
                 Init("bash", dnxsettings.CreateArgsForBashScript(), "Install dnx", settings.WorkingDir);
-
             }
         }
     }

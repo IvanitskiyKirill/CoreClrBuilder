@@ -73,13 +73,21 @@ namespace CoreClrBuilder
             if (Platform == Platform.Windows)
             {
                 string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
+                bool isPahtsFinded = false;
                 foreach (var path in paths)
                 {
                     if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd")))
                     {
                         DNX = Path.Combine(path, "dnx.exe");
                         DNU = Path.Combine(path, "dnu.cmd");
+                        isPahtsFinded = true;
+                        break;
                     }
+                }
+                if (!isPahtsFinded)
+                {
+                    DNU = "dnu";
+                    DNX = "dnx";
                 }
             }
             else {
