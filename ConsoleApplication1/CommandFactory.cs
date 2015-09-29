@@ -50,7 +50,7 @@ namespace CoreClrBuilder
         }
         public ICommand RunTests()
         {
-            BatchCommand batchCommand = new BatchCommand();
+            BatchCommand batchCommand = new BatchCommand(true);
             batchCommand.Add(new GetFromVCSCommand(
                 envSettings, 
                 Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
