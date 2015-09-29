@@ -6,7 +6,6 @@ namespace CoreClrBuilder.Commands
     {
         EnvironmentSettings settings;
         CoreClrProject project;
-        protected override bool ThrowWrongExitCodeException { get { return false; } }
         public RunTestsCommand(EnvironmentSettings settings, CoreClrProject project)
         {
             this.settings = settings;

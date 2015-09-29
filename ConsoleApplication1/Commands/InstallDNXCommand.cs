@@ -13,7 +13,7 @@ namespace CoreClrBuilder.Commands
         }
         protected override void PrepareCommand()
         {
-            if (settings.Platform == Platform.Windows)
+            if (EnvironmentSettings.Platform == Platform.Windows)
             {
                 Init(settings.DNVM, dnxsettings.CreateArgsForDNX(), "Install dnx", settings.WorkingDir);
             }

@@ -10,6 +10,12 @@ namespace CoreClrBuilder
     }
     class EnvironmentSettings
     {
+        public static Platform Platform;
+
+        static EnvironmentSettings() {
+            Platform = DetectPlatform();
+        }
+
         public string DNX { get; private set; }
         public string DNU { get; private set; }
         public string DNVM { get; private set; }
@@ -20,7 +26,6 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
-        public Platform Platform { get; internal set; }
         public string BuildArtifactsFolder { get; private set; }
 
         public EnvironmentSettings()
@@ -53,7 +58,7 @@ namespace CoreClrBuilder
             if(WorkingDir[WorkingDir.Length - 1] != '\\')
                 WorkingDir += "\\";
         }
-        private Platform DetectPlatform()
+        private static Platform DetectPlatform()
         {
             switch (Environment.OSVersion.Platform)
             {
