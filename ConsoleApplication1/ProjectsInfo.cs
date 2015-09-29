@@ -3,16 +3,27 @@ using System.Xml;
 
 namespace CoreClrBuilder
 {
-    class ProductInfo
+    class ProjectsInfo
     {
         public string ReleaseVersion { get; private set; }
         List<CoreClrProject> projects = new List<CoreClrProject>();
         public List<CoreClrProject> Projects { get { return projects; } }
 
-        public ProductInfo(string fileName, string framework)
+        public string Framework { get; private set; }
+        public ProjectsInfo(XmlDocument doc, string framework) {
+            Parse(doc, framework);
+        }
+
+        public ProjectsInfo(string fileName, string framework)
         {
+            if (fileName == null)
+                return;
             XmlDocument doc = new XmlDocument();
             doc.Load(fileName);
+            Parse(doc, framework);
+        }
+        void Parse(XmlDocument doc, string framework) {
+            Framework = framework;
             ReleaseVersion = doc.SelectSingleNode("/ProductInfo/ProductInformation/Version").InnerText;
             XmlNode vssLocations = doc.SelectSingleNode("/ProductInfo/VSSLocations");
             foreach (XmlNode location in vssLocations.ChildNodes)

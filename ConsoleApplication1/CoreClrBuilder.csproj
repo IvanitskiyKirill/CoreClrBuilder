@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CoreClrBuilder</RootNamespace>
     <AssemblyName>CoreClrBuilder</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,22 +48,48 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
-    <Compile Include="CommandBuilder.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="CommandFactory.cs" />
+    <Compile Include="Commands\ActionCommand.cs" />
+    <Compile Include="Commands\BatchCommand.cs" />
+    <Compile Include="Commands\BuildCommand.cs" />
+    <Compile Include="Commands\CollectArtifactsCommand.cs" />
+    <Compile Include="Commands\CopyProjectsCommand.cs" />
+    <Compile Include="Commands\DownloadDNVMCommand.cs" />
+    <Compile Include="Commands\GetFromVCSCommand.cs" />
+    <Compile Include="Commands\GetInstallDNXScriptComamnd.cs" />
+    <Compile Include="Commands\GetNugetConfigCommand.cs" />
+    <Compile Include="Commands\GetProductConfigCommand.cs" />
+    <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\InstallDNXCommand.cs" />
+    <Compile Include="Commands\InstallPackageCommand.cs" />
+    <Compile Include="Commands\RemoveProjectsCommand.cs" />
+    <Compile Include="Commands\RestoreCommand.cs" />
+    <Compile Include="Commands\RunTestsCommand.cs" />
+    <Compile Include="Commands\UnixGrantAccessCommand.cs" />
     <Compile Include="CoreClrProject.cs" />
     <Compile Include="Settings\EnvironmentSettings.cs" />
     <Compile Include="Executor.cs" />
     <Compile Include="NUnitMerger.cs" />
     <Compile Include="OutputLog.cs" />
-    <Compile Include="ProductInfo.cs" />
+    <Compile Include="ProjectsInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\DNXSettings.cs" />
     <Compile Include="Settings\StepSettings.cs" />
+    <Compile Include="Tests\CommandFactoryTests.cs" />
+    <Compile Include="Tests\DNXSettingsTests.cs" />
+    <Compile Include="Tests\ProjectsInfoTests.cs" />
+    <Compile Include="Tests\StepSettingsTests.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="WrongExitCodeException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
