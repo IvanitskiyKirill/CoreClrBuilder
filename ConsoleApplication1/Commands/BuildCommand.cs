@@ -1,8 +1,19 @@
-﻿namespace CoreClrBuilder.Commands
+﻿using System;
+
+namespace CoreClrBuilder.Commands
 {
     class BuildCommand : Command
     {
+        EnvironmentSettings settings;
+        CoreClrProject project;
+
         public BuildCommand(EnvironmentSettings settings, CoreClrProject project)
+        {
+            this.settings = settings;
+            this.project = project;
+        }
+
+        protected override void PrepareCommand()
         {
             string buildParams = string.Format("pack {0} --configuration {1}", project.LocalPath, project.BuildConfiguration);
             if (!string.IsNullOrEmpty(project.BuildFramework))

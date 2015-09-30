@@ -17,7 +17,7 @@ namespace CoreClrBuilder
         }
         public ICommand InstallEnvironment(DNXSettings dnxsettings)
         {
-            if (envSettings.Platform == Platform.Windows)
+            if (EnvironmentSettings.Platform == Platform.Windows)
                 return new BatchCommand(
                     new DownloadDNVMCommand(envSettings),
                     new InstallDNXCommand(envSettings, dnxsettings),
@@ -40,7 +40,7 @@ namespace CoreClrBuilder
             BatchCommand batchCommand = new BatchCommand();
             foreach (var project in productInfo.Projects)
             {
-                if (envSettings.Platform == Platform.Unix)
+                if (EnvironmentSettings.Platform == Platform.Unix)
                     batchCommand.Add(new UnixGrantAccessCommand(project.LocalPath, envSettings.WorkingDir));
                 batchCommand.Add(new RestoreCommand(envSettings, project));
                 batchCommand.Add(new BuildCommand(envSettings, project));
@@ -50,7 +50,7 @@ namespace CoreClrBuilder
         }
         public ICommand RunTests()
         {
-            BatchCommand batchCommand = new BatchCommand();
+            BatchCommand batchCommand = new BatchCommand(true);
             batchCommand.Add(new GetFromVCSCommand(
                 envSettings, 
                 Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
@@ -101,9 +101,9 @@ namespace CoreClrBuilder
         {
             return new RemoveProjectsCommand(productInfo);
         }
-        public ICommand CollectArtifacts(string destFolder, string buildFramework)
+        public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string buildFramework)
         {
-            return new CollectArtifactsCommand(productInfo, destFolder, buildFramework);
+            return new CollectArtifactsCommand(settings, productInfo, destFolder, buildFramework);
         }
     }
 }

@@ -71,7 +71,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.InstallEnvironment(dnxSettings));
 
             if (stepSettings.Build || stepSettings.RunTests)
-                envSettings.FindPathToDNX();
+                commands.Add(new ActionCommand("init dnx and dnu paths", new Action(envSettings.FindPathToDNX)));
 
             if (stepSettings.CopyDirs)
                 commands.Add(factory.CopyProjects(stepSettings.CopyPath, true));
@@ -89,7 +89,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.RunTests());
 
             if (stepSettings.CollectArtifats)
-                commands.Add(factory.CollectArtifacts(envSettings.BuildArtifactsFolder, dnxSettings.Framework));
+                commands.Add(factory.CollectArtifacts(envSettings, envSettings.BuildArtifactsFolder, dnxSettings.Framework));
 
             return commands;
         }

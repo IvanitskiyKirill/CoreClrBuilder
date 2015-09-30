@@ -10,6 +10,12 @@ namespace CoreClrBuilder
     }
     class EnvironmentSettings
     {
+        public static Platform Platform;
+
+        static EnvironmentSettings() {
+            Platform = DetectPlatform();
+        }
+
         public string DNX { get; private set; }
         public string DNU { get; private set; }
         public string DNVM { get; private set; }
@@ -20,9 +26,8 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
-        public Platform Platform { get; internal set; }
         public string BuildArtifactsFolder { get; private set; }
-
+        public string PackagesPath { get; private set; }
         public EnvironmentSettings()
         {
             Platform = DetectPlatform();
@@ -45,15 +50,17 @@ namespace CoreClrBuilder
         {
             UserProfile = "/home/user";
             DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
+            PackagesPath = Path.Combine(UserProfile, @".dnx/packages");
         }
         private void WindowsInit()
         {
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
-            if(WorkingDir[WorkingDir.Length - 1] != '\\')
+            PackagesPath = Path.Combine(UserProfile, @".dnx\packages");
+            if (WorkingDir[WorkingDir.Length - 1] != '\\')
                 WorkingDir += "\\";
         }
-        private Platform DetectPlatform()
+        private static Platform DetectPlatform()
         {
             switch (Environment.OSVersion.Platform)
             {
@@ -73,13 +80,21 @@ namespace CoreClrBuilder
             if (Platform == Platform.Windows)
             {
                 string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
+                bool isPahtsFinded = false;
                 foreach (var path in paths)
                 {
                     if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd")))
                     {
                         DNX = Path.Combine(path, "dnx.exe");
                         DNU = Path.Combine(path, "dnu.cmd");
+                        isPahtsFinded = true;
+                        break;
                     }
+                }
+                if (!isPahtsFinded)
+                {
+                    DNU = "dnu";
+                    DNX = "dnx";
                 }
             }
             else {
