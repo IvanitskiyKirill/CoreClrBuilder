@@ -2,35 +2,36 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace CoreClrBuilder
+namespace CoreClrBuilder.Commands
 {
-    class Command
+    abstract class Command : ICommand
     {
-        public static Command CreateEmptyCommand() { return new Command(); }
         StreamReader errorReader;
         List<string> outputErrors = new List<string>();
         string workingDir;
         string fileName;
         string args;
         string comment;
-        bool empty;
-        private Command()
-        {
-            empty = true;
-        }
+        protected virtual bool ThrowWrongExitCodeException { get { return true; } }
+
+        protected Command() { }
         public Command(string fileName, string args, string comment, string workingDir)
         {
+            Init(fileName, args, comment, workingDir);
+        }
+
+        protected void Init(string fileName, string args, string comment, string workingDir) {
             this.fileName = fileName;
             this.args = args;
             this.comment = comment;
             this.workingDir = workingDir;
         }
-        public void Execute()
+        protected abstract void PrepareCommand();
+        public virtual void Execute()
         {
-            if (empty)
-                return;
+            PrepareCommand();
             if (!string.IsNullOrEmpty(comment))
-                OutputLog.LogText(comment);
+                OutputLog.LogTextNewLine(comment);
 
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -59,8 +60,11 @@ namespace CoreClrBuilder
                     outputErrors.Add(strLogContents);
             }
             process.WaitForExit();
-            if (process.ExitCode != 0 || outputErrors.Count != 0)
+            if ((EnvironmentSettings.Platform == Platform.Windows && (process.ExitCode != 0 || outputErrors.Count > 0)) ||
+                (EnvironmentSettings.Platform != Platform.Windows && process.ExitCode != 0))
+            {
                 throw new WrongExitCodeException(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputErrors);
+            }
             outputErrors.Clear();
             errorReader = null;
             process = null;
@@ -68,11 +72,9 @@ namespace CoreClrBuilder
 
         public override string ToString()
         {
-            if (empty)
-                return "Empty Command";
             if (string.IsNullOrEmpty(comment))
                 return base.ToString();
-            return "Command: " + comment;
+            return base.ToString() + ": " + comment;
         }
     }
 }

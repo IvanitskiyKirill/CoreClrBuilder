@@ -3,8 +3,19 @@ using System.IO;
 
 namespace CoreClrBuilder
 {
+    enum Platform {
+        Windows,
+        Unix,
+        Unknown
+    }
     class EnvironmentSettings
     {
+        public static Platform Platform;
+
+        static EnvironmentSettings() {
+            Platform = DetectPlatform();
+        }
+
         public string DNX { get; private set; }
         public string DNU { get; private set; }
         public string DNVM { get; private set; }
@@ -15,39 +26,80 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
-        public EnvironmentSettings(string[] args)
+        public string BuildArtifactsFolder { get; private set; }
+        public string PackagesPath { get; private set; }
+        public EnvironmentSettings()
         {
-            DXVCSGet = "DXVCSGet.exe";
+            Platform = DetectPlatform();
+            PlatformPathsCorrector.Inst.Platform = Platform;
+
+            Console.WriteLine("WORKING DIR: {0}", Environment.CurrentDirectory);
+
             WorkingDir = Environment.CurrentDirectory;
+            ProductConfig = Path.Combine(WorkingDir, "Product.xml");
+            BuildArtifactsFolder = @"\\corp\builds\testbuilds\testbuild.v15.2 Portable";
+            DXVCSGet = "DXVCSGet.exe";
+
+            if (Platform == Platform.Windows)
+                WindowsInit();
+            else
+                UnixInit();
+        }
+
+        private void UnixInit()
+        {
+            UserProfile = "/home/user";
+            DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
+            PackagesPath = Path.Combine(UserProfile, @".dnx/packages");
+        }
+        private void WindowsInit()
+        {
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
-            ProductConfig = Path.Combine(WorkingDir, "Product.xml");
-
-            InitBranchVersion(args);
+            PackagesPath = Path.Combine(UserProfile, @".dnx\packages");
+            if (WorkingDir[WorkingDir.Length - 1] != '\\')
+                WorkingDir += "\\";
         }
-
-        void InitBranchVersion(string[] args)
+        private static Platform DetectPlatform()
         {
-            for (int i = 0; i < args.Length; i++)
+            switch (Environment.OSVersion.Platform)
             {
-                if ((string.Compare(args[i], "-branch", true) == 0 || string.Compare(args[i], "-b", true) == 0) && i < args.Length - 1)
-                {
-                    SetBranchVersion(args[i + 1]);
-                    break;
-                }
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    return Platform.Windows;
+                case PlatformID.Unix:
+                    return Platform.Unix;
+                default:
+                    return Platform.Unknown;
             }
         }
-
-        public void InitializeDNX()
+        public void FindPathToDNX()
         {
-            string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
-            foreach (var path in paths)
+            if (Platform == Platform.Windows)
             {
-                if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd")))
+                string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
+                bool isPahtsFinded = false;
+                foreach (var path in paths)
                 {
-                    DNX = Path.Combine(path, "dnx.exe");
-                    DNU = Path.Combine(path, "dnu.cmd");
+                    if (File.Exists(Path.Combine(path, "dnx.exe")) && File.Exists(Path.Combine(path, "dnu.cmd")))
+                    {
+                        DNX = Path.Combine(path, "dnx.exe");
+                        DNU = Path.Combine(path, "dnu.cmd");
+                        isPahtsFinded = true;
+                        break;
+                    }
                 }
+                if (!isPahtsFinded)
+                {
+                    DNU = "dnu";
+                    DNX = "dnx";
+                }
+            }
+            else {
+                DNU = "dnu";
+                DNX = "dnx";
             }
         }
         public void SetBranchVersion(string releaseVersion) {

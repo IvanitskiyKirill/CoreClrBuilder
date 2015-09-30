@@ -1,74 +1,73 @@
-﻿namespace CoreClrBuilder
+﻿using System;
+
+namespace CoreClrBuilder
 {
+
+    [Flags]
+    enum Steps : int {
+        NoSteps = 0,
+        EnvironmentInitialization = 1,
+        Build = 2,
+        RunTests = 4,
+        GetProjectsFromDXVCS = 8,
+        RemoveProjectsDirectories = 16,
+        CopyDirs = 32,
+        CollectArtifacts = 64,
+    }
     class StepSettings
     {
-        public bool EnvironmentInitialization { get; set; }
-        public bool Build { get; private set; }
-        public bool RunTests { get; private set; }
-        public bool RestorePackages { get; private set; }
-        public bool GetProjectsFromDXVCS { get; private set; }
+        public const string GET_PROJECTS = "get";
+        public const string BUILD_PROJECTS = "build";
+        public const string TEST_PROJECTS = "test";
+        public const string ENV_INIT = "env_init";
+        public const string REMOVE_PROJECTS = "remove";
+        public const string COPY_PROJECTS = "copy";
+        public const string COLLECT_ARTIFATCS = "collect_artifatcs";
 
-        public bool RemoveProjectsDirectories { get; private set; }
-        public bool CopyDirs { get; private set; }
+        readonly Steps steps;
+        readonly Steps allSteps = Steps.Build | Steps.CollectArtifacts | Steps.CopyDirs | Steps.EnvironmentInitialization | Steps.GetProjectsFromDXVCS | Steps.RemoveProjectsDirectories | Steps.RunTests;
+        readonly Steps defaultSteps = Steps.Build | Steps.RunTests | Steps.GetProjectsFromDXVCS | Steps.EnvironmentInitialization;
+
+        public Steps AllSteps { get { return allSteps; } }
+        public Steps DefaultSteps { get { return defaultSteps; } }
+
+        public Steps Steps { get { return steps; } }
+        public bool EnvironmentInitialization { get { return (steps & Steps.EnvironmentInitialization) == Steps.EnvironmentInitialization; } }
+        public bool Build { get { return (steps & Steps.Build) == Steps.Build; } }
+        public bool RunTests { get { return (steps & Steps.RunTests) == Steps.RunTests; } }
+        public bool GetProjectsFromDXVCS { get { return (steps & Steps.GetProjectsFromDXVCS) == Steps.GetProjectsFromDXVCS; } }
+        public bool RemoveProjectsDirectories { get { return (steps & Steps.RemoveProjectsDirectories) == Steps.RemoveProjectsDirectories; } }
+        public bool CopyDirs { get { return (steps & Steps.CopyDirs) == Steps.CopyDirs; } }
+        public bool CollectArtifats { get { return (steps & Steps.CollectArtifacts) == Steps.CollectArtifacts; } }
         public string CopyPath { get; private set; }
+
         public StepSettings(string [] args)
         {
-            Build = true;
-            RunTests = true;
-            RestorePackages = true;
-            GetProjectsFromDXVCS = true;
-            EnvironmentInitialization = true;
-
-            RemoveProjectsDirectories = false;
-
-            for (int i = 0; i < args.Length; i++)
+            if (args != null)
             {
-                if ((string.Compare(args[i], "exclude_steps:", true) == 0 || string.Compare(args[i], "ex:", true) == 0) && i < args.Length - 1)
+                for (int i = 0; i < args.Length; i++)
                 {
-                    while (i + 1 < args.Length)
+                    if (string.Compare(args[i], GET_PROJECTS, true) == 0)
+                        steps |= Steps.GetProjectsFromDXVCS;
+                    else if (string.Compare(args[i], BUILD_PROJECTS, true) == 0)
+                        steps |= Steps.Build;
+                    else if (string.Compare(args[i], TEST_PROJECTS, true) == 0)
+                        steps |= Steps.RunTests;
+                    else if (string.Compare(args[i], ENV_INIT, true) == 0)
+                        steps |= Steps.EnvironmentInitialization;
+                    else if (string.Compare(args[i], REMOVE_PROJECTS, true) == 0)
+                        steps |= Steps.RemoveProjectsDirectories;
+                    else if (string.Compare(args[i], COPY_PROJECTS, true) == 0 && i < args.Length - 1)
                     {
-                        if (string.Compare(args[i + 1], "get", true) == 0)
-                            GetProjectsFromDXVCS = false;
-                        else if (string.Compare(args[i + 1], "restore", true) == 0)
-                            RestorePackages = false;
-                        else if (string.Compare(args[i + 1], "build", true) == 0)
-                            Build = false;
-                        else if (string.Compare(args[i + 1], "test", true) == 0)
-                            RunTests = false;
-                        else if (string.Compare(args[i + 1], "env_init", true) == 0)
-                            EnvironmentInitialization = false;
-                        else if (string.Compare(args[i + 1], "all", true) == 0)
-                        {
-                            DisableAllSteps();
-                        }
-                        else
-                            break;
-                        i++;
+                        CopyPath = args[i + 1];
+                        steps |= Steps.CopyDirs;
                     }
-                }
-                else if (string.Compare(args[i], "-remove_projects", true) == 0 || string.Compare(args[i], "-rm", true) == 0) {
-                    DisableAllSteps();
-                    RemoveProjectsDirectories = true;
-                }
-                else if (string.Compare(args[i], "-copy", true) == 0 && i < args.Length - 1)
-                {
-                    DisableAllSteps();
-                    CopyPath = args[i + 1];
-                    CopyDirs = true;
-                }
-                else if (string.Compare(args[i], "-get", true) == 0)
-                {
-                    DisableAllSteps();
-                    GetProjectsFromDXVCS = true;
+                    else if (string.Compare(args[i], COLLECT_ARTIFATCS, true) == 0)
+                        steps |= Steps.CollectArtifacts;
                 }
             }
-        }
-        void DisableAllSteps() {
-            Build = false;
-            RunTests = false;
-            RestorePackages = false;
-            GetProjectsFromDXVCS = false;
-            EnvironmentInitialization = false;
+            if ((steps & AllSteps) == Steps.NoSteps || (steps & AllSteps) == Steps.CollectArtifacts)
+                steps |= defaultSteps;
         }
     }
 }
