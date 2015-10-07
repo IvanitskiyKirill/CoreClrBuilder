@@ -48,7 +48,7 @@ namespace CoreClrBuilder
 
         private void UnixInit()
         {
-            UserProfile = "/home/user";
+            UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
             PackagesPath = Path.Combine(UserProfile, @".dnx/packages");
         }
@@ -98,8 +98,21 @@ namespace CoreClrBuilder
                 }
             }
             else {
-                DNU = "dnu";
-                DNX = "dnx";
+                string runtimesFolder = Path.Combine(UserProfile, ".dnx/runtimes");
+                Console.WriteLine("User profile: " + Path.Combine(UserProfile, ""));
+                string[] dirs = Directory.GetDirectories(runtimesFolder);
+                if (dirs != null && dirs.Length > 0)
+                {
+                    string runtimePath = Path.Combine(runtimesFolder, dirs[0]);
+                    DNU = Path.Combine(runtimePath, "bin/dnu");
+                    DNX = Path.Combine(runtimePath, "bin/dnx");
+                }
+                else
+                {
+                    DNU = "dnu";
+                    DNX = "dnx";
+                }
+                Console.WriteLine("DNU: {0}, DNX: {1}", DNU, DNX);
             }
         }
         public void SetBranchVersion(string releaseVersion) {
