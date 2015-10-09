@@ -12,6 +12,7 @@ namespace CoreClrBuilder
         public const string DNXCORE50_FRAMEWORK = "dnxcore50";
 
         public const string RUNTIME_FLAGE = "-r";
+        public const string MONO_RUNTIME = "mono";
         public const string CORECLR_RUNTIME = "coreclr";
         public const string CLR_RUNTIME = "clr";
 
@@ -43,7 +44,8 @@ namespace CoreClrBuilder
                         UnstableChannel = true;
                     else if (string.Compare(arg, RUNTIME_FLAGE, true) == 0 && i < args.Length - 1)
                     {
-                        if (string.Compare(args[i + 1], CORECLR_RUNTIME, true) == 0 ||
+                        if (string.Compare(args[i + 1], MONO_RUNTIME, true) == 0 ||
+                            string.Compare(args[i + 1], CORECLR_RUNTIME, true) == 0 ||
                             string.Compare(args[i + 1], CLR_RUNTIME, true) == 0)
                             Runtime = args[i + 1];
                     }
@@ -73,7 +75,7 @@ namespace CoreClrBuilder
             //if (UnstableChannel)
             //    args += " " + UNSTABLE_FLAGE;
             //return args;
-            return "dnxInstall.sh " + (UnstableChannel ? UNSTABLE_FLAGE : string.Empty);
+            return string.Format("dnxInstall.sh {0} {1}", Runtime, (UnstableChannel ? UNSTABLE_FLAGE : string.Empty));
         }
     }
 }
