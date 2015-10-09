@@ -63,6 +63,7 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\InstallDNXCommand.cs" />
     <Compile Include="Commands\InstallPackageCommand.cs" />
+    <Compile Include="Commands\LinuxFreeMemoryCommand.cs" />
     <Compile Include="Commands\RemoveProjectsCommand.cs" />
     <Compile Include="Commands\RestoreCommand.cs" />
     <Compile Include="Commands\RunTestsCommand.cs" />

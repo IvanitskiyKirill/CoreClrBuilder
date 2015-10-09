@@ -45,33 +45,47 @@ namespace CoreClrBuilder
                 batchCommand.Add(new RestoreCommand(envSettings, project));
                 batchCommand.Add(new BuildCommand(envSettings, project));
                 batchCommand.Add(new InstallPackageCommand(envSettings, project));
+                //if (EnvironmentSettings.Platform == Platform.Unix) {
+                //    batchCommand.Add(new LinuxFreeMemoryStartCommand());
+                //    batchCommand.Add(new LinuxFreeMemoryCommand());
+                //}
             }
             return batchCommand;
         }
         public ICommand RunTests()
         {
-            BatchCommand batchCommand = new BatchCommand(true);
-            batchCommand.Add(new GetFromVCSCommand(
-                envSettings, 
-                Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
-                envSettings.WorkingDir,
-                "get NUnitXml.xslt",
-                envSettings.WorkingDir));
+            BatchCommand batchCommand = new BatchCommand(EnvironmentSettings.Platform != Platform.Unix);
             batchCommand.Add(new ActionCommand("Tests clear", () =>
             {
                 foreach (var project in productInfo.Projects)
                 {
                     string xUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
-                    string nUnitResults = Path.Combine(envSettings.WorkingDir, project.NunitTestResultFileName);
 
                     if (File.Exists(xUnitResults))
                         File.Delete(xUnitResults);
                 }
             }));
-            
-            foreach (var project in productInfo.Projects)
-                batchCommand.Add(new RunTestsCommand(envSettings, project));
 
+            foreach (var project in productInfo.Projects)
+            {
+                batchCommand.Add(new RunTestsCommand(envSettings, project));
+                //if (EnvironmentSettings.Platform == Platform.Unix)
+                //{
+                //    batchCommand.Add(new LinuxFreeMemoryStartCommand());
+                //    batchCommand.Add(new LinuxFreeMemoryCommand());
+                //}
+            }
+            return batchCommand;
+        }
+        public ICommand CollectTestResults()
+        {
+            BatchCommand batchCommand = new BatchCommand();
+            batchCommand.Add(new GetFromVCSCommand(
+                envSettings,
+                Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
+                envSettings.WorkingDir,
+                "get NUnitXml.xslt",
+                envSettings.WorkingDir));
             batchCommand.Add(new ActionCommand("Tests transform", () =>
             {
                 XslCompiledTransform xslt = new XslCompiledTransform();

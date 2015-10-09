@@ -12,13 +12,15 @@ namespace CoreClrBuilder
     class Executor
     {
         XmlTextWriter tmpXml;
-        StringBuilder taskBreakingLog = new StringBuilder();
+        //StringBuilder taskBreakingLog = new StringBuilder();
         ProjectsInfo productInfo;
         CommandFactory factory;
         StepSettings stepSettings;
+        bool hasErrors = false;
         public int ExecuteTasks(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings)
         {
-            tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
+            string currLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            tmpXml = new XmlTextWriter(Path.Combine(currLocation, "vssPathsByTasks.xml"), Encoding.Unicode);
             tmpXml.Formatting = Formatting.Indented;
             int result = 0;
             try
@@ -47,14 +49,17 @@ namespace CoreClrBuilder
                 Console.WriteLine(e.ToString());
                 result = 1;
             }
+            Console.WriteLine("Start write logs");
+            if (hasErrors)
+                tmpXml.WriteEndElement();
+            tmpXml.Flush();
             tmpXml.Close();
-            if (taskBreakingLog.Length > 0)
-            {
-                taskBreakingLog.Insert(0, "<vssPathsByTasks>\r\n");
-                taskBreakingLog.Append("\r\n</vssPathsByTasks>\r\n");
-                string currLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                File.WriteAllText(Path.Combine(currLocation, "vssPathsByTasks.xml"), taskBreakingLog.ToString());
-            }
+            Console.WriteLine("End write logs");
+            //if (result == 0)
+            //{
+            //    taskBreakingLog.Insert(0, "<vssPathsByTasks>\r\n");
+            //    taskBreakingLog.Append("\r\n</vssPathsByTasks>\r\n");
+            //}
             return result > 0 ? 1 : 0;
         }
 
@@ -86,7 +91,10 @@ namespace CoreClrBuilder
                 commands.Add(factory.BuildProjects());
 
             if (stepSettings.RunTests)
+            {
                 commands.Add(factory.RunTests());
+                commands.Add(factory.CollectTestResults());
+            }
 
             if (stepSettings.CollectArtifats)
                 commands.Add(factory.CollectArtifacts(envSettings, envSettings.BuildArtifactsFolder, dnxSettings.Framework));
@@ -111,6 +119,9 @@ namespace CoreClrBuilder
                 OutputLog.LogException(e);
                 lock (tmpXml)
                 {
+                    if (!hasErrors)
+                        tmpXml.WriteStartElement("vssPathsByTasks");
+                    hasErrors = true;
                     tmpXml.WriteStartElement("task");
                     tmpXml.WriteStartElement("error");
                     tmpXml.WriteElementString("message", e.ToString());

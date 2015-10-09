@@ -13,7 +13,9 @@ namespace CoreClrBuilder.Commands
         }
         public void Execute()
         {
+            Console.WriteLine("Start command: " + Name);
             action();
+            Console.WriteLine("End command: " + Name);
         }
     }
 }
