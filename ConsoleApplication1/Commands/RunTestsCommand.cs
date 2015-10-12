@@ -6,15 +6,19 @@ namespace CoreClrBuilder.Commands
     {
         EnvironmentSettings settings;
         CoreClrProject project;
-        public RunTestsCommand(EnvironmentSettings settings, CoreClrProject project)
+        string runtime;
+        public RunTestsCommand(EnvironmentSettings settings, CoreClrProject project, string runtime)
         {
             this.settings = settings;
             this.project = project;
+            this.runtime = runtime;
         }
 
         protected override void PrepareCommand()
         {
-            Init(settings.DNX, string.Format(@"-p {0} --configuration {1} test -xml {2}", project.LocalPath, project.BuildConfiguration, project.TestResultFileName), "run tests", settings.WorkingDir);
+            string monoOptions = runtime == DNXSettings.MONO_RUNTIME ? "-parallel none" : string.Empty;
+            string args = string.Format(@"-p {0} --configuration {1} test {2} -xml {3}", project.LocalPath, project.BuildConfiguration, monoOptions, project.TestResultFileName);
+            Init(settings.DNX, args, "run tests", settings.WorkingDir);
         }
     }
 

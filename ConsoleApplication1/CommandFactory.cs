@@ -52,10 +52,10 @@ namespace CoreClrBuilder
             }
             return batchCommand;
         }
-        public ICommand RunTests()
+        public ICommand RunTests(string runtime)
         {
             BatchCommand batchCommand = new BatchCommand(EnvironmentSettings.Platform != Platform.Unix);
-            batchCommand.Add(new ActionCommand("Tests clear", () =>
+            batchCommand.Add(new ActionCommand("Test Clear", () =>
             {
                 foreach (var project in productInfo.Projects)
                 {
@@ -65,10 +65,11 @@ namespace CoreClrBuilder
                         File.Delete(xUnitResults);
                 }
             }));
-
+            if (EnvironmentSettings.Platform == Platform.Unix)
+                batchCommand.Add(new UnixGrantAccessCommand(envSettings.WorkingDir, envSettings.WorkingDir));
             foreach (var project in productInfo.Projects)
             {
-                batchCommand.Add(new RunTestsCommand(envSettings, project));
+                batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
                 //if (EnvironmentSettings.Platform == Platform.Unix)
                 //{
                 //    batchCommand.Add(new LinuxFreeMemoryStartCommand());

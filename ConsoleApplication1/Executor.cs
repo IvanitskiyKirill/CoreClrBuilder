@@ -12,16 +12,18 @@ namespace CoreClrBuilder
     class Executor
     {
         XmlTextWriter tmpXml;
-        //StringBuilder taskBreakingLog = new StringBuilder();
+        StringBuilder taskBreakingLog = new StringBuilder();
         ProjectsInfo productInfo;
         CommandFactory factory;
         StepSettings stepSettings;
-        bool hasErrors = false;
+        //bool hasErrors = false;
         public int ExecuteTasks(DNXSettings dnxSettings, StepSettings stepSettings, EnvironmentSettings envSettings)
         {
-            string currLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            tmpXml = new XmlTextWriter(Path.Combine(currLocation, "vssPathsByTasks.xml"), Encoding.Unicode);
+            tmpXml = new XmlTextWriter(new StringWriter(taskBreakingLog));
+            //string currLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            //tmpXml = new XmlTextWriter(Path.Combine(currLocation, "vssPathsByTasks.xml"), Encoding.Unicode);
             tmpXml.Formatting = Formatting.Indented;
+
             int result = 0;
             try
             {
@@ -43,23 +45,27 @@ namespace CoreClrBuilder
                             break;
                     }
                 }
+                Console.WriteLine("All tasks are completed");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
                 result = 1;
             }
-            Console.WriteLine("Start write logs");
-            if (hasErrors)
-                tmpXml.WriteEndElement();
-            tmpXml.Flush();
-            tmpXml.Close();
-            Console.WriteLine("End write logs");
-            //if (result == 0)
-            //{
-            //    taskBreakingLog.Insert(0, "<vssPathsByTasks>\r\n");
-            //    taskBreakingLog.Append("\r\n</vssPathsByTasks>\r\n");
-            //}
+            //Console.WriteLine("Start write logs");
+            //if (hasErrors)
+            //    tmpXml.WriteEndElement();
+            //tmpXml.Flush();
+            //tmpXml.Close();
+            //Console.WriteLine("End write logs");
+            if (taskBreakingLog.Length > 0)
+            {
+                taskBreakingLog.Insert(0, "<vssPathsByTasks>\r\n");
+                taskBreakingLog.Append("\r\n</vssPathsByTasks>\r\n");
+                string currLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                File.WriteAllText(Path.Combine(currLocation, "vssPathsByTasks.xml"), taskBreakingLog.ToString());
+            }
+
             return result > 0 ? 1 : 0;
         }
 
@@ -92,7 +98,7 @@ namespace CoreClrBuilder
 
             if (stepSettings.RunTests)
             {
-                commands.Add(factory.RunTests());
+                commands.Add(factory.RunTests(dnxSettings.Runtime));
                 commands.Add(factory.CollectTestResults());
             }
 
@@ -108,26 +114,31 @@ namespace CoreClrBuilder
             timer.Start();
             try
             {
+                Console.WriteLine("Start command: " + command.ToString());
                 command.Execute();
+                Console.WriteLine("End command: " + command.ToString());
 
                 OutputLog.LogTextNewLine("\r\n<<<<done. Elapsed time {0:F2} sec", timer.Elapsed.TotalSeconds);
                 return 0;
             }
             catch (Exception e)
             {
+                Console.WriteLine("Exception in command: " + command.ToString());
                 OutputLog.LogTextNewLine("\r\n<<<<exception. Elapsed time {0:F2} sec", timer.Elapsed.TotalSeconds);
                 OutputLog.LogException(e);
                 lock (tmpXml)
                 {
-                    if (!hasErrors)
-                        tmpXml.WriteStartElement("vssPathsByTasks");
-                    hasErrors = true;
+                    //if (!hasErrors)
+                    //    tmpXml.WriteStartElement("vssPathsByTasks");
+                    //hasErrors = true;
                     tmpXml.WriteStartElement("task");
                     tmpXml.WriteStartElement("error");
                     tmpXml.WriteElementString("message", e.ToString());
                     tmpXml.WriteEndElement();
                     tmpXml.WriteEndElement();
                 }
+                Console.WriteLine("Exit code 1");
+
                 return 1;
             }
         }
