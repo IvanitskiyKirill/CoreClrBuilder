@@ -97,10 +97,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.BuildProjects());
 
             if (stepSettings.RunTests)
-            {
                 commands.Add(factory.RunTests(dnxSettings.Runtime));
-                commands.Add(factory.CollectTestResults());
-            }
 
             if (stepSettings.CollectArtifats)
                 commands.Add(factory.CollectArtifacts(envSettings, envSettings.BuildArtifactsFolder, dnxSettings.Framework));

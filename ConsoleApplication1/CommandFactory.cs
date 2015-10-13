@@ -54,7 +54,7 @@ namespace CoreClrBuilder
         }
         public ICommand RunTests(string runtime)
         {
-            BatchCommand batchCommand = new BatchCommand(EnvironmentSettings.Platform != Platform.Unix);
+            BatchCommand batchCommand = new BatchCommand(true);
             batchCommand.Add(new ActionCommand("Test Clear", () =>
             {
                 foreach (var project in productInfo.Projects)
@@ -76,11 +76,6 @@ namespace CoreClrBuilder
                 //    batchCommand.Add(new LinuxFreeMemoryCommand());
                 //}
             }
-            return batchCommand;
-        }
-        public ICommand CollectTestResults()
-        {
-            BatchCommand batchCommand = new BatchCommand();
             batchCommand.Add(new GetFromVCSCommand(
                 envSettings,
                 Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
