@@ -35,14 +35,14 @@ namespace CoreClrBuilder
                 batchCommand.Add(new GetFromVCSCommand(envSettings, project.VSSPath, project.LocalPath, string.Format("get {0} from VCS", project.ProjectName), envSettings.WorkingDir ));
             return batchCommand;
         }
-        public ICommand BuildProjects()
+        public ICommand BuildProjects(DNXSettings dnxsettings)
         {
             BatchCommand batchCommand = new BatchCommand();
             foreach (var project in productInfo.Projects)
             {
                 if (EnvironmentSettings.Platform == Platform.Unix)
                     batchCommand.Add(new UnixGrantAccessCommand(project.LocalPath, envSettings.WorkingDir));
-                batchCommand.Add(new RestoreCommand(envSettings, project));
+                batchCommand.Add(new RestoreCommand(envSettings, project, dnxsettings));
                 batchCommand.Add(new BuildCommand(envSettings, project));
                 batchCommand.Add(new InstallPackageCommand(envSettings, project));
                 //if (EnvironmentSettings.Platform == Platform.Unix) {

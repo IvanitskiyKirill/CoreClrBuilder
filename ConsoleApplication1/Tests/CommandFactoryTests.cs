@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CoreClrBuilder.Tests
 {
-    [TestFixture]
+    [TestFixture, Ignore]
     class CommandFactoryTests
     {
         EnvironmentSettings envSettings;
