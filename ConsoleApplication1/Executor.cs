@@ -94,7 +94,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.GetProjectsFromVCS());
 
             if (stepSettings.Build) 
-                commands.Add(factory.BuildProjects(dnxSettings));
+                commands.Add(factory.BuildProjects());
 
             if (stepSettings.RunTests)
                 commands.Add(factory.RunTests(dnxSettings.Runtime));
