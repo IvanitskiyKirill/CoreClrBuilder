@@ -1,21 +1,45 @@
-﻿using System;
+﻿namespace CoreClrBuilder.Commands {
+    class InstallPackageCommand : Command {
+        readonly EnvironmentSettings settings;
+        readonly string pathToPackage;
 
-namespace CoreClrBuilder.Commands
-{
-    class InstallPackageCommand : Command
-    {
-        EnvironmentSettings settings;
-        CoreClrProject project;
+        string Args {
+            get {
+                return PlatformPathsCorrector.Inst.Correct(
+                    string.Format(
+                        "packages add {0} {1}",
+                        pathToPackage,
+                        InstallationPath),
+                    Platform.Windows);
+            }
+        }
+
+        string InstallationPath {
+            get { return string.Format(@"{0}\.dnx\packages", settings.UserProfile); }
+        }
+
+        InstallPackageCommand(EnvironmentSettings settings) {
+            this.settings = settings;
+        }
 
         public InstallPackageCommand(EnvironmentSettings settings, CoreClrProject project)
-        {
+            : this(settings) {
             this.settings = settings;
-            this.project = project;
+            pathToPackage = string.Format(
+                @"{0}\bin\{1}\{2}",
+                project.LocalPath,
+                project.BuildConfiguration,
+                project.NugetPackageName);
         }
-        protected override void PrepareCommand()
-        {
-            string args = PlatformPathsCorrector.Inst.Correct(string.Format(@"packages add {0}\bin\{1}\{2} {3}\.dnx\packages", project.LocalPath, project.BuildConfiguration, project.NugetPackageName, settings.UserProfile), Platform.Windows);
-            Init(settings.DNU, args, "install package", settings.WorkingDir);
+
+        public InstallPackageCommand(EnvironmentSettings settings, string pathToPackage)
+            : this(settings) {
+            this.settings = settings;
+            this.pathToPackage = pathToPackage;
+        }
+
+        protected override void PrepareCommand() {
+            Init(settings.DNU, Args, "install package", settings.WorkingDir);
         }
     }
 

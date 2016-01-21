@@ -82,6 +82,9 @@ namespace CoreClrBuilder
             if (stepSettings.GetProjectsFromDXVCS)
                 commands.Add(factory.GetProjectsFromVCS());
 
+            if(stepSettings.InstallTestbuild)
+                commands.Add(factory.InstallTestbuild(dnxSettings.Runtime, dnxSettings.Framework));
+
             if (stepSettings.Build) 
                 commands.Add(factory.BuildProjects());
 
@@ -89,7 +92,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.RunTests());
 
             if (stepSettings.CollectArtifats)
-                commands.Add(factory.CollectArtifacts(envSettings, envSettings.BuildArtifactsFolder, dnxSettings.Framework));
+                commands.Add(factory.CollectArtifacts(envSettings, envSettings.BuildArtifactsFolder, dnxSettings.Runtime, dnxSettings.Framework));
 
             return commands;
         }
