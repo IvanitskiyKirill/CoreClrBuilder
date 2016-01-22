@@ -6,11 +6,7 @@
         string Args {
             get {
                 return PlatformPathsCorrector.Inst.Correct(
-                    string.Format(
-                        "packages add {0} {1}",
-                        pathToPackage,
-                        InstallationPath),
-                    Platform.Windows);
+                    string.Format("packages add {0}", pathToPackage), Platform.Windows);
             }
         }
 
