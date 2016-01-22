@@ -108,14 +108,14 @@ namespace CoreClrBuilder
 
         public ICommand InstallTestbuild(string runtime, string framework) {
             var batchCommand = new BatchCommand();
-            var localPath = Path.Combine(envSettings.WorkingDir, "testbuild");
-            var sourcePath = Path.Combine(envSettings.BuildArtifactsFolder, runtime, framework);
+            var localPath = PlatformPathsCorrector.Inst.Correct(Path.Combine(envSettings.WorkingDir, "testbuild"), Platform.Windows);
+            var sourcePath = PlatformPathsCorrector.Inst.Correct(Path.Combine(envSettings.BuildArtifactsFolder, runtime, framework), Platform.Windows);
 
             batchCommand.Add(new CopyDirectoryCommand(sourcePath, localPath, true));
 
             var version = envSettings.BranchVersionShort + ".0";
 
-            foreach(var enumerateDirectory in Directory.EnumerateDirectories(localPath)) {
+            foreach(var enumerateDirectory in Directory.EnumerateDirectories(sourcePath)) {
                 var pathToPackage = Path.Combine(enumerateDirectory, version);
                 var packageName = string.Format("{0}.{1}.nupkg", new DirectoryInfo(enumerateDirectory).Name, version);
                 var fullPath = Path.Combine(pathToPackage, packageName);
