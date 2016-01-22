@@ -10,6 +10,7 @@ namespace CoreClrBuilder
         public const string DOTNET_FRAMEWORK = "dotnet";
         public const string DNX451_FRAMEWORK = "dnx451";
         public const string DNXCORE50_FRAMEWORK = "dnxcore50";
+        public const string DOTNET54_FRAMEWORK = "dotnet54";
 
         public const string RUNTIME_FLAGE = "-r";
         public const string CORECLR_RUNTIME = "coreclr";
@@ -37,7 +38,8 @@ namespace CoreClrBuilder
                     string arg = args[i];
                     if (string.Compare(arg, DOTNET_FRAMEWORK, true) == 0 ||
                         string.Compare(arg, DNX451_FRAMEWORK, true) == 0 ||
-                        string.Compare(arg, DNXCORE50_FRAMEWORK, true) == 0)
+                        string.Compare(arg, DNXCORE50_FRAMEWORK, true) == 0 ||
+                        string.Compare(arg, DOTNET54_FRAMEWORK, true) == 0)
                         Framework = arg;
                     else if (string.Compare(arg, UNSTABLE_FLAGE, true) == 0)
                         UnstableChannel = true;
