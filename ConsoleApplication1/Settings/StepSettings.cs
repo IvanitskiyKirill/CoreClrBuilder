@@ -28,7 +28,7 @@ namespace CoreClrBuilder
 
         readonly Steps steps;
         readonly Steps allSteps = Steps.Build | Steps.CollectArtifacts | Steps.CopyDirs | Steps.EnvironmentInitialization | Steps.GetProjectsFromDXVCS | Steps.RemoveProjectsDirectories | Steps.RunTests;
-        readonly Steps defaultSteps = Steps.Build | Steps.RunTests | Steps.GetProjectsFromDXVCS | Steps.EnvironmentInitialization;
+        readonly Steps defaultSteps = Steps.Build | Steps.RunTests | Steps.GetProjectsFromDXVCS | Steps.EnvironmentInitialization | Steps.CollectArtifacts;
 
         public Steps AllSteps { get { return allSteps; } }
         public Steps DefaultSteps { get { return defaultSteps; } }
