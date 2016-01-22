@@ -60,6 +60,10 @@ namespace CoreClrBuilder.Commands
         }
 
         public void Execute() {
+            if(!Directory.Exists(destPath)) {
+                Directory.CreateDirectory(destPath);
+            }
+
             if(Directory.Exists(sourcePath)) {
                 Console.WriteLine("Begin copy dir {0} ", destPath);
                 DirectoryCopy(sourcePath, destPath, copySubDirs);
