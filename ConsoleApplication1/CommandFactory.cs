@@ -111,9 +111,29 @@ namespace CoreClrBuilder
         {
             return new RemoveProjectsCommand(productInfo);
         }
-        public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string buildFramework)
+        public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string runtime, string buildFramework)
         {
-            return new CollectArtifactsCommand(settings, productInfo, destFolder, buildFramework);
+            return new CollectArtifactsCommand(settings, productInfo, destFolder, runtime, buildFramework);
+        }
+
+        public ICommand InstallTestbuild(string runtime, string framework) {
+            var batchCommand = new BatchCommand();
+            var localPath = PlatformPathsCorrector.Inst.Correct(Path.Combine(envSettings.WorkingDir, "testbuild"), Platform.Windows);
+            var sourcePath = PlatformPathsCorrector.Inst.Correct(Path.Combine(envSettings.BuildArtifactsFolder, runtime, framework), Platform.Windows);
+
+            batchCommand.Add(new CopyDirectoryCommand(sourcePath, localPath, true));
+
+            var version = envSettings.BranchVersionShort + ".0";
+
+            foreach(var enumerateDirectory in Directory.EnumerateDirectories(sourcePath)) {
+                var pathToPackage = Path.Combine(enumerateDirectory, version);
+                var packageName = string.Format("{0}.{1}.nupkg", new DirectoryInfo(enumerateDirectory).Name, version);
+                var fullPath = Path.Combine(pathToPackage, packageName);
+
+                batchCommand.Add(new InstallPackageCommand(envSettings, fullPath));
+            }
+
+            return batchCommand;
         }
     }
 }
