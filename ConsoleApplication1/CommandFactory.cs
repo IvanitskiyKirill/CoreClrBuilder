@@ -116,24 +116,30 @@ namespace CoreClrBuilder
             return new CollectArtifactsCommand(settings, productInfo, destFolder, runtime, buildFramework);
         }
 
-        public ICommand InstallTestbuild(string runtime, string framework) {
+        public ICommand CopyTestbuildFolder(string runtime, string framework) {
             var batchCommand = new BatchCommand();
-            var localPath = PlatformPathsCorrector.Inst.Correct(Path.Combine(envSettings.WorkingDir, "testbuild"), Platform.Windows);
-            var sourcePath = PlatformPathsCorrector.Inst.Correct(Path.Combine(envSettings.BuildArtifactsFolder, runtime, framework), Platform.Windows);
+            var sourcePath = TestbuildPathHelper.Combine(envSettings.BuildArtifactsFolder, runtime, framework);
 
-            batchCommand.Add(new CopyDirectoryCommand(sourcePath, localPath, true));
-
-            var version = envSettings.BranchVersionShort + ".0";
-
-            foreach(var enumerateDirectory in Directory.EnumerateDirectories(sourcePath)) {
-                var pathToPackage = Path.Combine(enumerateDirectory, version);
-                var packageName = string.Format("{0}.{1}.nupkg", new DirectoryInfo(enumerateDirectory).Name, version);
-                var fullPath = Path.Combine(pathToPackage, packageName);
-
-                batchCommand.Add(new InstallPackageCommand(envSettings, fullPath));
-            }
+            batchCommand.Add(new CreateDirectoryCommand(envSettings.LocalTestbuildFolder));
+            batchCommand.Add(new CopyDirectoryCommand(sourcePath, envSettings.LocalTestbuildFolder, true));
 
             return batchCommand;
+        }
+
+        public ICommand UnixMountTestbuildDirectory(string runtime, string framework) {
+            var batchCommand = new BatchCommand();
+            var sourcePath = TestbuildPathHelper.Combine(envSettings.BuildArtifactsFolder, runtime, framework);
+
+            batchCommand.Add(new CreateDirectoryCommand(envSettings.LocalTestbuildFolder));
+            batchCommand.Add(new UnixGrantAccessCommand(envSettings.LocalTestbuildFolder, envSettings.WorkingDir));
+            batchCommand.Add(new LinuxMountDirectory(sourcePath, envSettings.LocalTestbuildFolder, envSettings.WorkingDir));
+            
+            return batchCommand;
+        }
+
+        public ICommand InstallTestbuild() {
+            var version = envSettings.BranchVersionShort + ".0";
+            return new InstallTestbuildCommand(envSettings, envSettings.LocalTestbuildFolder, version);
         }
     }
 }

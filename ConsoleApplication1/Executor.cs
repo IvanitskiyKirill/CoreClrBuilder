@@ -30,7 +30,7 @@ namespace CoreClrBuilder
                 IEnumerable<ICommand> commands = PrepareCommands(dnxSettings, stepSettings, envSettings, result);
                 foreach (var command in commands)
                 {
-                    BatchCommand batchCommand = command as BatchCommand;
+                    IBatchCommand batchCommand = command as IBatchCommand;
                     if (batchCommand != null && batchCommand.IsBatchOfIndependedCommands)
                     {
                         foreach (var innerCommands in batchCommand.Commands)
@@ -84,6 +84,12 @@ namespace CoreClrBuilder
             if (stepSettings.Build || stepSettings.RunTests)
                 commands.Add(new ActionCommand("init dnx and dnu paths", new Action(envSettings.FindPathToDNX)));
 
+            if(EnvironmentSettings.Platform == Platform.Unix && (stepSettings.CollectArtifats || stepSettings.InstallTestbuild))
+                commands.Add(factory.UnixMountTestbuildDirectory(dnxSettings.Runtime, dnxSettings.Framework));
+
+            if(EnvironmentSettings.Platform == Platform.Windows && stepSettings.InstallTestbuild)
+                commands.Add(factory.CopyTestbuildFolder(dnxSettings.Runtime, dnxSettings.Framework));
+
             if (stepSettings.CopyDirs)
                 commands.Add(factory.CopyProjects(stepSettings.CopyPath, true));
 
@@ -94,7 +100,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.GetProjectsFromVCS());
 
             if(stepSettings.InstallTestbuild)
-                commands.Add(factory.InstallTestbuild(dnxSettings.Runtime, dnxSettings.Framework));
+                commands.Add(factory.InstallTestbuild());
 
             if (stepSettings.Build) 
                 commands.Add(factory.BuildProjects());
@@ -103,7 +109,7 @@ namespace CoreClrBuilder
                 commands.Add(factory.RunTests(dnxSettings.Runtime));
 
             if (stepSettings.CollectArtifats)
-                commands.Add(factory.CollectArtifacts(envSettings, envSettings.BuildArtifactsFolder, dnxSettings.Runtime, dnxSettings.Framework));
+                commands.Add(factory.CollectArtifacts(envSettings, EnvironmentSettings.Platform == Platform.Windows ? envSettings.BuildArtifactsFolder : envSettings.LocalTestbuildFolder, dnxSettings.Runtime, dnxSettings.Framework));
 
             return commands;
         }
