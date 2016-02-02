@@ -15,7 +15,7 @@ namespace CoreClrBuilder.Commands
             this.settings = settings;
             this.info = info;
             if (!string.IsNullOrEmpty(buildFramework) && !string.IsNullOrEmpty(runtime))
-                this.destFolder = PlatformPathsCorrector.Inst.Correct(string.Format(@"{0}\{1}\{2}", destFolder, runtime, buildFramework), Platform.Windows);
+                this.destFolder = TestbuildPathHelper.Combine(destFolder, runtime, buildFramework);
             else
                 this.destFolder = destFolder;
         }
