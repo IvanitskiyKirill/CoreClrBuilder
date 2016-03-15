@@ -26,8 +26,16 @@ namespace CoreClrBuilder
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
         public string BranchVersion { get; private set; }
         public string BranchVersionShort { get; private set; }
-        public string BuildArtifactsFolder { get; private set; }
+        public string BuildArtifactsFolder {
+            get {
+                return Platform == Platform.Windows
+                    ? string.Format(@"\\corp\builds\testbuilds\testbuild.v{0}.Portable", BranchVersionShort)
+                    : PlatformPathsCorrector.Inst.Correct(Path.Combine(@"\\hyper16\testbuilds", string.Format(@"testbuild.v{0}.Portable", BranchVersionShort)), Platform.Windows);
+            }
+        }
         public string PackagesPath { get; private set; }
+        public string LocalTestbuildFolder { get; private set; }
+
         public EnvironmentSettings()
         {
             Platform = DetectPlatform();
@@ -37,8 +45,8 @@ namespace CoreClrBuilder
 
             WorkingDir = Environment.CurrentDirectory;
             ProductConfig = Path.Combine(WorkingDir, "Product.xml");
-            BuildArtifactsFolder = @"\\corp\builds\testbuilds\testbuild.v15.2 Portable";
             DXVCSGet = "DXVCSGet.exe";
+            LocalTestbuildFolder = PlatformPathsCorrector.Inst.Correct(Path.Combine(WorkingDir, "testbuild"), Platform.Windows);
 
             if (Platform == Platform.Windows)
                 WindowsInit();

@@ -2,7 +2,7 @@
 
 namespace CoreClrBuilder.Commands
 {
-    class BatchCommand : ICommand
+    class BatchCommand : Command, IBatchCommand
     {
         public bool IsBatchOfIndependedCommands { get; set; }
         List<ICommand> commands;
@@ -23,12 +23,15 @@ namespace CoreClrBuilder.Commands
             commands.Add(command);
         }
 
-        public void Execute()
-        {
+        public override void Execute() {
+            PrepareCommand();
+
             foreach (var command in Commands)
             {
                 command.Execute();
             }
         }
+
+        protected override void PrepareCommand() {}
     }
 }

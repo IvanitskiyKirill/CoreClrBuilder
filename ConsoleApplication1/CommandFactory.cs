@@ -111,9 +111,38 @@ namespace CoreClrBuilder
         {
             return new RemoveProjectsCommand(productInfo);
         }
-        public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string buildFramework)
+        public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string runtime, string buildFramework)
         {
-            return new CollectArtifactsCommand(settings, productInfo, destFolder, buildFramework);
+            if(EnvironmentSettings.Platform == Platform.Windows)
+            return new CollectArtifactsCommand(settings, productInfo, destFolder, runtime, buildFramework);
+            else
+                return new CollectArtifactsCommand(settings, productInfo, destFolder, null, null);
+        }
+
+        public ICommand CopyTestbuildFolder(string runtime, string framework) {
+            var batchCommand = new BatchCommand();
+            var sourcePath = TestbuildPathHelper.Combine(envSettings.BuildArtifactsFolder, runtime, framework);
+
+            batchCommand.Add(new CreateDirectoryCommand(envSettings.LocalTestbuildFolder));
+            batchCommand.Add(new CopyDirectoryCommand(sourcePath, envSettings.LocalTestbuildFolder, true));
+
+            return batchCommand;
+        }
+
+        public ICommand UnixMountTestbuildDirectory(string runtime, string framework) {
+            var batchCommand = new BatchCommand();
+            var sourcePath = TestbuildPathHelper.Combine(envSettings.BuildArtifactsFolder, runtime, framework);
+
+            batchCommand.Add(new CreateDirectoryCommand(envSettings.LocalTestbuildFolder));
+            batchCommand.Add(new UnixGrantAccessCommand(envSettings.LocalTestbuildFolder, envSettings.WorkingDir));
+            batchCommand.Add(new LinuxMountDirectory(sourcePath, envSettings.LocalTestbuildFolder, envSettings.WorkingDir));
+            
+            return batchCommand;
+        }
+
+        public ICommand InstallTestbuild() {
+            var version = envSettings.BranchVersionShort + ".0";
+            return new InstallTestbuildCommand(envSettings, envSettings.LocalTestbuildFolder, version);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,12 @@ namespace CoreClrBuilder
             if (pathPlatform == Platform.Windows && Platform == Platform.Unix)
                 return path.Replace(WindowsSeparator, UnixSeparator);
             return path;
+        }
+    }
+
+    static class TestbuildPathHelper {
+        public static string Combine(string path, string runtime, string framework) {
+            return PlatformPathsCorrector.Inst.Correct(Path.Combine(path, EnvironmentSettings.Platform.ToString(), string.Join("-", runtime, framework)), Platform.Windows);
         }
     }
 }
