@@ -15,10 +15,14 @@ namespace CoreClrBuilder.Commands
 
         protected override void PrepareCommand()
         {
+            /*
             string buildParams = string.Format("pack {0} --configuration {1}", project.LocalPath, project.BuildConfiguration);
             if (!string.IsNullOrEmpty(project.BuildFramework))
                 buildParams += string.Format(" --framework {0}", project.BuildFramework);
             Init(settings.DNU, buildParams, "build", settings.WorkingDir);
+            */
+            string buildParams = string.Format("build {0}", project.LocalPath, project.BuildConfiguration);
+            Init(settings.DNU, buildParams, "call build", settings.WorkingDir);
         }
     }
 
