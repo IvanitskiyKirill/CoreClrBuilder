@@ -116,7 +116,7 @@ namespace CoreClrBuilder
         public ICommand CollectArtifacts(EnvironmentSettings settings, string destFolder, string runtime, string buildFramework)
         {
             if(EnvironmentSettings.Platform == Platform.Windows)
-            return new CollectArtifactsCommand(settings, productInfo, destFolder, runtime, buildFramework);
+                return new CollectArtifactsCommand(settings, productInfo, destFolder, runtime, buildFramework);
             else
                 return new CollectArtifactsCommand(settings, productInfo, destFolder, null, null);
         }

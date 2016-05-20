@@ -112,20 +112,22 @@ namespace CoreClrBuilder
                 //}
             }
             else {
-                string runtimesFolder = Path.Combine(UserProfile, ".dnx/runtimes");
-                Console.WriteLine("User profile: " + Path.Combine(UserProfile, ""));
-                string[] dirs = Directory.GetDirectories(runtimesFolder);
-                if (dirs != null && dirs.Length > 0)
-                {
-                    string runtimePath = Path.Combine(runtimesFolder, dirs[0]);
-                    DNU = Path.Combine(runtimePath, "bin/dnu");
-                    DNX = Path.Combine(runtimePath, "bin/dnx");
-                }
-                else
-                {
-                    DNU = "dnu";
-                    DNX = "dnx";
-                }
+                //string runtimesFolder = Path.Combine(UserProfile, ".dnx/runtimes");
+                //Console.WriteLine("User profile: " + Path.Combine(UserProfile, ""));
+                //string[] dirs = Directory.GetDirectories(runtimesFolder);
+                //if (dirs != null && dirs.Length > 0)
+                //{
+                //    string runtimePath = Path.Combine(runtimesFolder, dirs[0]);
+                //    DNU = Path.Combine(runtimePath, "bin/dnu");
+                //    DNX = Path.Combine(runtimePath, "bin/dnx");
+                //}
+                //else
+                //{
+                //    DNU = "dnu";
+                //    DNX = "dnx";
+                //}
+                DNX = @"/usr/bin/dotnet";
+                DNU = DNX;
                 Console.WriteLine("DNU: {0}, DNX: {1}", DNU, DNX);
             }
         }
