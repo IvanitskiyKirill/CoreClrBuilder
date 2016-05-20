@@ -35,7 +35,7 @@
         }
 
         protected override void PrepareCommand() {
-            Init(settings.DNU, Args, "install package", settings.WorkingDir);
+            Init(settings.DotNet, Args, "install package", settings.WorkingDir);
         }
     }
 

@@ -22,7 +22,7 @@ namespace CoreClrBuilder.Commands
             Init(settings.DNU, buildParams, "build", settings.WorkingDir);
             */
             string buildParams = string.Format("build {0}", project.LocalPath, project.BuildConfiguration);
-            Init(settings.DNU, buildParams, "call build", settings.WorkingDir);
+            Init(settings.DotNet, buildParams, "call build", settings.WorkingDir);
         }
     }
 

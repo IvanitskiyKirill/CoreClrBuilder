@@ -25,10 +25,9 @@ namespace CoreClrBuilder.Tests
             BatchCommand command = factory.InstallEnvironment(dnxSettings) as BatchCommand;
             Assert.IsNotNull(command);
 
-            Assert.AreEqual(3, command.Commands.Count);
-            Assert.IsInstanceOf<DownloadDNVMCommand>(command.Commands[0]);
-            Assert.IsInstanceOf<InstallDNXCommand>(command.Commands[1]);
-            Assert.IsInstanceOf<GetNugetConfigCommand>(command.Commands[2]);
+            Assert.AreEqual(2, command.Commands.Count);
+            Assert.IsInstanceOf<InstallNetCoreCommand>(command.Commands[0]);
+            Assert.IsInstanceOf<GetNugetConfigCommand>(command.Commands[1]);
         }
         [Test]
         public void GetProjectsFromVCS() {

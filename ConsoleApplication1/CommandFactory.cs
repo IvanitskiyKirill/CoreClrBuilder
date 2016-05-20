@@ -26,7 +26,7 @@ namespace CoreClrBuilder
             else
                 return new BatchCommand(
                     new GetInstallDNXScriptComamnd(envSettings, dnxsettings),
-                    new InstallDNXCommand(envSettings, dnxsettings),
+                    new InstallNetCoreCommand(envSettings, dnxsettings),
                     new GetNugetConfigCommand(envSettings, dnxsettings));
         }
         public ICommand GetProjectsFromVCS()

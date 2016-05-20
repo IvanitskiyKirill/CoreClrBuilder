@@ -55,7 +55,6 @@
     <Compile Include="Commands\BuildCommand.cs" />
     <Compile Include="Commands\CollectArtifactsCommand.cs" />
     <Compile Include="Commands\CopyProjectsCommand.cs" />
-    <Compile Include="Commands\DownloadDNVMCommand.cs" />
     <Compile Include="Commands\GetFromVCSCommand.cs" />
     <Compile Include="Commands\GetInstallDNXScriptComamnd.cs" />
     <Compile Include="Commands\GetNugetConfigCommand.cs" />

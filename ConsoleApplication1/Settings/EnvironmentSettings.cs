@@ -16,9 +16,7 @@ namespace CoreClrBuilder
             Platform = DetectPlatform();
         }
 
-        public string DNX { get; private set; }
-        public string DNU { get; private set; }
-        public string DNVM { get; private set; }
+        public string DotNet { get; private set; }
         public string DotNetInstaller { get; private set; }
         public string DXVCSGet { get; private set; }
         public string UserProfile { get; private set; }
@@ -58,14 +56,12 @@ namespace CoreClrBuilder
         private void UnixInit()
         {
             UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            DNVM = string.Format(@"{0}/.dnx/dnvm/dnvm.sh", UserProfile);
             //DotNetInstaller = "DotNetCoreInst.exe";
             PackagesPath = Path.Combine(UserProfile, @".dnx/packages");
         }
         private void WindowsInit()
         {
             UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-            DNVM = string.Format(@"{0}\.dnx\bin\dnvm.cmd", UserProfile);
             DotNetInstaller = "DotNetCoreInst.exe";
             PackagesPath = Path.Combine(UserProfile, @".dnx\packages");
             if (WorkingDir[WorkingDir.Length - 1] != '\\')
@@ -86,50 +82,11 @@ namespace CoreClrBuilder
                     return Platform.Unknown;
             }
         }
-        public void FindPathToDNX()
-        {
+        public void FindPathToDNX() {
             if (Platform == Platform.Windows)
-            {
-                DNX = @"C:\Program Files\dotnet\dotnet.exe";
-                DNU = DNX;
-                //string[] paths = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User).Split(';');
-                //bool isPahtsFinded = false;
-                //foreach (var path in paths)
-                //{
-                //    if (File.Exists(Path.Combine(path, "dotnet.exe"))/* && File.Exists(Path.Combine(path, "dnu.cmd"))*/)
-                //    {
-                //        DNX = Path.Combine(path, "dotnet.exe");
-                //        DNU = DNX;
-                //        //DNU = Path.Combine(path, "dnu.cmd");
-                //        isPahtsFinded = true;
-                //        break;
-                //    }
-                //}
-                //if (!isPahtsFinded)
-                //{
-                //    DNU = "dotnet";
-                //    DNX = "dotnet";
-                //}
-            }
-            else {
-                //string runtimesFolder = Path.Combine(UserProfile, ".dnx/runtimes");
-                //Console.WriteLine("User profile: " + Path.Combine(UserProfile, ""));
-                //string[] dirs = Directory.GetDirectories(runtimesFolder);
-                //if (dirs != null && dirs.Length > 0)
-                //{
-                //    string runtimePath = Path.Combine(runtimesFolder, dirs[0]);
-                //    DNU = Path.Combine(runtimePath, "bin/dnu");
-                //    DNX = Path.Combine(runtimePath, "bin/dnx");
-                //}
-                //else
-                //{
-                //    DNU = "dnu";
-                //    DNX = "dnx";
-                //}
-                DNX = @"/usr/bin/dotnet";
-                DNU = DNX;
-                Console.WriteLine("DNU: {0}, DNX: {1}", DNU, DNX);
-            }
+                DotNet = @"C:\Program Files\dotnet\dotnet.exe";
+            else
+                DotNet = @"/usr/bin/dotnet";
         }
         public void SetBranchVersion(string releaseVersion) {
             string[] parts = releaseVersion.Split('.');

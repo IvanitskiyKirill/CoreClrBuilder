@@ -15,7 +15,7 @@ namespace CoreClrBuilder.Commands
 
         protected override void PrepareCommand()
         {
-            Init(settings.DNU, string.Format("restore {0}", project.LocalPath), "call dnu restore", settings.WorkingDir);
+            Init(settings.DotNet, string.Format("restore {0}", project.LocalPath), "call dnu restore", settings.WorkingDir);
         }
     }
 
