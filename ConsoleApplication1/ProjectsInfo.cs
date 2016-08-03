@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace CoreClrBuilder
@@ -28,8 +29,11 @@ namespace CoreClrBuilder
             XmlNode vssLocations = doc.SelectSingleNode("/ProductInfo/VSSLocations");
             foreach (XmlNode location in vssLocations.ChildNodes)
             {
-                string buildConf = location.Attributes["BuildConfiguration"] == null ? "Debug" : location.Attributes["BuildConfiguration"].InnerText;
-                projects.Add(new CoreClrProject(location.Attributes["VSSPath"].InnerText, location.Attributes["ReferenceName"].InnerText, ReleaseVersion, buildConf, framework));
+                bool isTestProject = location.Attributes["TestProject"] == null ? false : Convert.ToBoolean(location.Attributes["TestProject"].InnerText);
+                string buildConf = location.Attributes["BuildConfiguration"] == null ? (isTestProject ? "DebugTest" : "Release") : location.Attributes["BuildConfiguration"].InnerText;
+                string vssPath = location.Attributes["VSSPath"].InnerText;
+                string localPath = location.Attributes["ReferenceName"].InnerText;
+                projects.Add(new CoreClrProject(vssPath, localPath, ReleaseVersion, buildConf, framework, isTestProject));
             }
         }
     }

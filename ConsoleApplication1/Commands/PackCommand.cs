@@ -2,13 +2,13 @@
 
 namespace CoreClrBuilder.Commands
 {
-    class BuildCommand : Command
+    class PackCommand : Command
     {
         EnvironmentSettings settings;
         string projectPath;
         string buildConfiguration;
 
-        public BuildCommand(EnvironmentSettings settings, string projectPath, string buildConfiguration)
+        public PackCommand(EnvironmentSettings settings, string projectPath, string buildConfiguration)
         {
             this.settings = settings;
             this.projectPath = projectPath;
@@ -23,9 +23,10 @@ namespace CoreClrBuilder.Commands
                 buildParams += string.Format(" --framework {0}", project.BuildFramework);
             Init(settings.DNU, buildParams, "build", settings.WorkingDir);
             */
-            string buildParams = string.Format("build {0}", projectPath);
+            string buildParams = string.Format("pack {0} -o NetCore/bin/", projectPath);
             if (!string.IsNullOrEmpty(buildConfiguration))
                 buildParams += string.Format(" --configuration={0}", buildConfiguration);
+
             Init(settings.DotNet, buildParams, "call build", settings.WorkingDir);
         }
     }

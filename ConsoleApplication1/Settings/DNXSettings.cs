@@ -4,7 +4,6 @@ namespace CoreClrBuilder
 {
     class DNXSettings
     {
-        public const string UNSTABLE_FLAGE = "-u";
         public const string VERSION_FLAGE = "-v";
 
         public const string DOTNET_FRAMEWORK = "dotnet";
@@ -22,7 +21,6 @@ namespace CoreClrBuilder
         public const string X64_ARCH = "x64";
 
 
-        public bool UnstableChannel { get; set; }
         public string Runtime { get; set; }
         public string Architecture { get; set; }
         public string DNXVersion { get; set; }
@@ -30,7 +28,6 @@ namespace CoreClrBuilder
 
         public DNXSettings(string[] args)
         {
-            UnstableChannel = false;
             Architecture = X64_ARCH;
 
             if (args != null)
@@ -42,8 +39,6 @@ namespace CoreClrBuilder
                         string.Compare(arg, DNXCORE50_FRAMEWORK, true) == 0 ||
                         string.Compare(arg, DOTNET54_FRAMEWORK, true) == 0)
                         Framework = arg;
-                    else if (string.Compare(arg, UNSTABLE_FLAGE, true) == 0)
-                        UnstableChannel = true;
                     else if (string.Compare(arg, RUNTIME_FLAGE, true) == 0 && i < args.Length - 1)
                     {
                         if (string.Compare(args[i + 1], MONO_RUNTIME, true) == 0 ||
@@ -68,16 +63,13 @@ namespace CoreClrBuilder
             string args = string.IsNullOrEmpty(DNXVersion) ? "upgrade" : "install " + DNXVersion + " -Persist";
             args += string.Format(" {0} {1}",RUNTIME_FLAGE, Runtime);
             args += " -arch " + Architecture;
-            if (UnstableChannel)
-                args += " -u";
+            
             return args;
         }
         public string CreateArgsForBashScript() {
             //string args = string.Format("dnxInstall.sh {0} {1}", Runtime, Architecture);
-            //if (UnstableChannel)
-            //    args += " " + UNSTABLE_FLAGE;
             //return args;
-            return string.Format("dnxInstall.sh {0} {1}", Runtime, (UnstableChannel ? UNSTABLE_FLAGE : string.Empty));
+            return string.Format("dnxInstall.sh {0}", Runtime);
         }
     }
 }

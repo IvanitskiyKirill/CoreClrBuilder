@@ -81,14 +81,11 @@ namespace CoreClrBuilder
             if (stepSettings.EnvironmentInitialization)
                 commands.Add(factory.InstallEnvironment(dnxSettings));
 
-            if (stepSettings.Build || stepSettings.RunTests)
-                commands.Add(new ActionCommand("init dnx and dnu paths", new Action(envSettings.FindPathToDNX)));
-
-            if(EnvironmentSettings.Platform == Platform.Unix && (stepSettings.CollectArtifats || stepSettings.InstallTestbuild))
+            if (EnvironmentSettings.Platform == Platform.Unix && stepSettings.CollectArtifats)
                 commands.Add(factory.UnixMountTestbuildDirectory(dnxSettings.Runtime, dnxSettings.Framework));
 
-            if(EnvironmentSettings.Platform == Platform.Windows && stepSettings.InstallTestbuild)
-                commands.Add(factory.CopyTestbuildFolder(dnxSettings.Runtime, dnxSettings.Framework));
+            //if (EnvironmentSettings.Platform == Platform.Windows)
+            //    commands.Add(factory.CopyTestbuildFolder(dnxSettings.Runtime, dnxSettings.Framework));
 
             if (stepSettings.CopyDirs)
                 commands.Add(factory.CopyProjects(stepSettings.CopyPath, true));
@@ -98,9 +95,6 @@ namespace CoreClrBuilder
 
             if (stepSettings.GetProjectsFromDXVCS)
                 commands.Add(factory.GetProjectsFromVCS());
-
-            if(stepSettings.InstallTestbuild)
-                commands.Add(factory.InstallTestbuild());
 
             if (stepSettings.Build) 
                 commands.Add(factory.BuildProjects());

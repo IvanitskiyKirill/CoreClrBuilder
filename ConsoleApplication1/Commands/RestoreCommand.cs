@@ -5,17 +5,17 @@ namespace CoreClrBuilder.Commands
     class RestoreCommand : Command
     {
         EnvironmentSettings settings;
-        CoreClrProject project;
+        string projectPath;
 
-        public RestoreCommand(EnvironmentSettings settings, CoreClrProject project)
+        public RestoreCommand(EnvironmentSettings settings, string projectPath)
         {
             this.settings = settings;
-            this.project = project;
+            this.projectPath = projectPath;
         }
 
         protected override void PrepareCommand()
         {
-            Init(settings.DotNet, string.Format("restore {0}", project.LocalPath), "call dnu restore", settings.WorkingDir);
+            Init(settings.DotNet, string.Format("restore {0}", projectPath), "call dnu restore", settings.WorkingDir);
         }
     }
 

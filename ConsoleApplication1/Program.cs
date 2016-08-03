@@ -12,13 +12,12 @@ namespace CoreClrBuilder
             {
                 Console.Write(@"
 CoreClrBuilder.exe [-config:<name>] [env_init] [remove] [get] [build] [test]
-    env_init [-u] [-r <runtime>] [-arch <name>] [-v <version>]
+    env_init [-r <runtime>] [-arch <name>] [-v <version>]
     build [dnx451] [dotnet] [dnxcore50] 
 
 -config:<config_name> - configuration file with projects and project settings (Not Supported yet)
 
-env_init - dnx and dnvm installation, getting nuget.config, product.xml
-    -u - use unstable version of dnx
+env_init - dotnet core installation, getting nuget.config, product.xml
     -r - runtime clr or coreclr
     -arch - x64 or x86
     -v - version of dnx (Example: 1.0.0-beta4-11566)

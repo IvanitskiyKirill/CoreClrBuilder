@@ -10,9 +10,9 @@
             }
         }
 
-        string InstallationPath {
-            get { return string.Format(@"{0}\.dnx\packages", settings.UserProfile); }
-        }
+        //string InstallationPath {
+        //    get { return string.Format(@"{0}\.dnx\packages", settings.UserProfile); }
+        //}
 
         InstallPackageCommand(EnvironmentSettings settings) {
             this.settings = settings;

@@ -13,7 +13,7 @@ namespace CoreClrBuilder
         RemoveProjectsDirectories = 16,
         CopyDirs = 32,
         CollectArtifacts = 64,
-        InstalTestbuild = 128
+        
     }
     class StepSettings
     {
@@ -24,7 +24,6 @@ namespace CoreClrBuilder
         public const string REMOVE_PROJECTS = "remove";
         public const string COPY_PROJECTS = "copy";
         public const string COLLECT_ARTIFATCS = "collect_artifatcs";
-        public const string INSTALL_TESTBUILD = "install_testbuild";
 
         readonly Steps steps;
         readonly Steps allSteps = Steps.Build | Steps.CollectArtifacts | Steps.CopyDirs | Steps.EnvironmentInitialization | Steps.GetProjectsFromDXVCS | Steps.RemoveProjectsDirectories | Steps.RunTests;
@@ -41,7 +40,6 @@ namespace CoreClrBuilder
         public bool RemoveProjectsDirectories { get { return (steps & Steps.RemoveProjectsDirectories) == Steps.RemoveProjectsDirectories; } }
         public bool CopyDirs { get { return (steps & Steps.CopyDirs) == Steps.CopyDirs; } }
         public bool CollectArtifats { get { return (steps & Steps.CollectArtifacts) == Steps.CollectArtifacts; } }
-        public bool InstallTestbuild { get { return (steps & Steps.InstalTestbuild) == Steps.InstalTestbuild; } }
         public string CopyPath { get; private set; }
 
         public StepSettings(string [] args)
@@ -67,8 +65,6 @@ namespace CoreClrBuilder
                     }
                     else if (string.Compare(args[i], COLLECT_ARTIFATCS, true) == 0)
                         steps |= Steps.CollectArtifacts;
-                    else if(string.Compare(args[i], INSTALL_TESTBUILD, true) == 0)
-                        steps |= Steps.InstalTestbuild;
                     
                 }
             }

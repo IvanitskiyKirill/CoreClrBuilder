@@ -52,13 +52,6 @@ namespace CoreClrBuilder.Tests
 
         }
         [Test]
-        public void Unstable()
-        {
-            settings = new DNXSettings(parse("-u"));
-            Assert.IsTrue(settings.UnstableChannel);
-            Assert.AreEqual("upgrade -r clr -arch x64 -u", settings.CreateArgsForDNX());
-        }
-        [Test]
         public void DNXVersion()
         {
             settings = new DNXSettings(parse("-v"));
@@ -89,7 +82,6 @@ namespace CoreClrBuilder.Tests
         }
         void AssertSettings(string runtime, string arch, bool unstable, string framework, string dnxVersion)
         {
-            Assert.AreEqual(unstable, settings.UnstableChannel);
             Assert.AreEqual(runtime, settings.Runtime);
             Assert.AreEqual(arch, settings.Architecture);
             Assert.AreEqual(dnxVersion, settings.DNXVersion);

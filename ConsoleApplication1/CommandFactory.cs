@@ -32,20 +32,23 @@ namespace CoreClrBuilder
         public ICommand GetProjectsFromVCS()
         {
             BatchCommand batchCommand = new BatchCommand();
-            foreach (var project in productInfo.Projects)
-                batchCommand.Add(new GetFromVCSCommand(envSettings, project.VSSPath, project.LocalPath, string.Format("get {0} from VCS", project.ProjectName), envSettings.WorkingDir ));
+            foreach (var project in productInfo.Projects) {
+                batchCommand.Add(new GetFromVCSCommand(envSettings, project.VSSPath, project.LocalPath, string.Format("get {0} from VCS", project.ProjectName), envSettings.WorkingDir));
+            }
             return batchCommand;
         }
         public ICommand BuildProjects()
         {
             BatchCommand batchCommand = new BatchCommand();
-            batchCommand.Add(new RestoreCommand(envSettings, new CoreClrProject(String.Empty, String.Empty, String.Empty, String.Empty, String.Empty))); // restore for all
-            foreach (var project in productInfo.Projects)
-            {
+            batchCommand.Add(new RestoreCommand(envSettings, String.Empty)); // restore for all
+            foreach (var project in productInfo.Projects) {
+                if (project.IsTestProject)
+                    continue;
                 if (EnvironmentSettings.Platform == Platform.Unix)
                     batchCommand.Add(new UnixGrantAccessCommand(project.LocalPath, envSettings.WorkingDir));
-                batchCommand.Add(new RestoreCommand(envSettings, project));
-                batchCommand.Add(new BuildCommand(envSettings, project));
+
+                batchCommand.Add(new RestoreCommand(envSettings, project.LocalPath));
+                batchCommand.Add(new PackCommand(envSettings, project.LocalPath, project.BuildConfiguration));
                 //batchCommand.Add(new InstallPackageCommand(envSettings, project));
                 //if (EnvironmentSettings.Platform == Platform.Unix) {
                 //    batchCommand.Add(new LinuxFreeMemoryStartCommand());
@@ -57,53 +60,23 @@ namespace CoreClrBuilder
         public ICommand RunTests(string runtime)
         {
             BatchCommand batchCommand = new BatchCommand(true);
-            batchCommand.Add(new ActionCommand("Test Clear", () =>
-            {
-                foreach (var project in productInfo.Projects)
-                {
-                    string xUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
-
-                    if (File.Exists(xUnitResults))
-                        File.Delete(xUnitResults);
-                }
-            }));
             if (EnvironmentSettings.Platform == Platform.Unix)
                 batchCommand.Add(new UnixGrantAccessCommand(envSettings.WorkingDir, envSettings.WorkingDir));
-            foreach (var project in productInfo.Projects)
-            {
+            //batchCommand.Add(new RestoreCommand(envSettings, String.Empty));
+            foreach (var project in productInfo.Projects) {
+                if (!project.IsTestProject)
+                    continue;
+
+                batchCommand.Add(new RestoreCommand(envSettings, project.LocalPath));
+                batchCommand.Add(new BuildCommand(envSettings, project.LocalPath, project.BuildConfiguration));
                 batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
+                
                 //if (EnvironmentSettings.Platform == Platform.Unix)
                 //{
                 //    batchCommand.Add(new LinuxFreeMemoryStartCommand());
                 //    batchCommand.Add(new LinuxFreeMemoryCommand());
                 //}
             }
-            batchCommand.Add(new GetFromVCSCommand(
-                envSettings,
-                Path.Combine(envSettings.RemoteSettingsPath, "NUnitXml.xslt"),
-                envSettings.WorkingDir,
-                "get NUnitXml.xslt",
-                envSettings.WorkingDir));
-            batchCommand.Add(new ActionCommand("Tests transform", () =>
-            {
-                XslCompiledTransform xslt = new XslCompiledTransform();
-                xslt.Load("NUnitXml.xslt");
-                List<string> nUnitTestFiles = new List<string>();
-                foreach (var project in productInfo.Projects)
-                {
-                    string xUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
-                    string nUnitResults = Path.Combine(envSettings.WorkingDir, project.NunitTestResultFileName);
-
-                    if (File.Exists(nUnitResults))
-                        File.Delete(nUnitResults);
-                    if (File.Exists(xUnitResults))
-                    {
-                        xslt.Transform(xUnitResults, nUnitResults);
-                        nUnitTestFiles.Add(nUnitResults);
-                    }
-                }
-                NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
-            }));
             return batchCommand;
         }
         public ICommand CopyProjects(string copyPath, bool copySubDirs) {
@@ -140,11 +113,6 @@ namespace CoreClrBuilder
             batchCommand.Add(new LinuxMountDirectory(sourcePath, envSettings.LocalTestbuildFolder, envSettings.WorkingDir));
             
             return batchCommand;
-        }
-
-        public ICommand InstallTestbuild() {
-            var version = envSettings.BranchVersionShort + ".0";
-            return new InstallTestbuildCommand(envSettings, envSettings.LocalTestbuildFolder, version);
         }
     }
 }

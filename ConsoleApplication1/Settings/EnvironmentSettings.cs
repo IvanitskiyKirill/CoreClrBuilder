@@ -19,7 +19,7 @@ namespace CoreClrBuilder
         public string DotNet { get; private set; }
         public string DotNetInstaller { get; private set; }
         public string DXVCSGet { get; private set; }
-        public string UserProfile { get; private set; }
+        //public string UserProfile { get; private set; }
         public string WorkingDir { get; private set; }
         public string ProductConfig { get; private set; }
         public string RemoteSettingsPath { get { return string.Format(@"$/CCNetConfig/LocalProjects/{0}/BuildPortable/", BranchVersionShort); } }
@@ -55,15 +55,16 @@ namespace CoreClrBuilder
 
         private void UnixInit()
         {
-            UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            //DotNetInstaller = "DotNetCoreInst.exe";
-            PackagesPath = Path.Combine(UserProfile, @".dnx/packages");
+            DotNet = @"/usr/bin/dotnet";
+            //UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            PackagesPath = Path.Combine(WorkingDir, @"NetCore/bin");
         }
         private void WindowsInit()
         {
-            UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+            DotNet = @"C:\Program Files\dotnet\dotnet.exe";
+            //UserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             DotNetInstaller = "DotNetCoreInst.exe";
-            PackagesPath = Path.Combine(UserProfile, @".dnx\packages");
+            PackagesPath = Path.Combine(WorkingDir, @"NetCore\bin");
             if (WorkingDir[WorkingDir.Length - 1] != '\\')
                 WorkingDir += "\\";
         }
@@ -81,12 +82,6 @@ namespace CoreClrBuilder
                 default:
                     return Platform.Unknown;
             }
-        }
-        public void FindPathToDNX() {
-            if (Platform == Platform.Windows)
-                DotNet = @"C:\Program Files\dotnet\dotnet.exe";
-            else
-                DotNet = @"/usr/bin/dotnet";
         }
         public void SetBranchVersion(string releaseVersion) {
             string[] parts = releaseVersion.Split('.');
