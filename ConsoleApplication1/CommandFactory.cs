@@ -40,15 +40,16 @@ namespace CoreClrBuilder
         public ICommand BuildProjects()
         {
             BatchCommand batchCommand = new BatchCommand();
-            batchCommand.Add(new RestoreCommand(envSettings, String.Empty)); // restore for all
             foreach (var project in productInfo.Projects) {
-                if (project.IsTestProject)
-                    continue;
+                
                 if (EnvironmentSettings.Platform == Platform.Unix)
                     batchCommand.Add(new UnixGrantAccessCommand(project.LocalPath, envSettings.WorkingDir));
 
                 batchCommand.Add(new RestoreCommand(envSettings, project.LocalPath));
-                batchCommand.Add(new PackCommand(envSettings, project.LocalPath, project.BuildConfiguration));
+                if (!project.IsTestProject)
+                    batchCommand.Add(new PackCommand(envSettings, project.LocalPath, project.BuildConfiguration));
+                else
+                    batchCommand.Add(new BuildCommand(envSettings, project.LocalPath, project.BuildConfiguration));
                 //batchCommand.Add(new InstallPackageCommand(envSettings, project));
                 //if (EnvironmentSettings.Platform == Platform.Unix) {
                 //    batchCommand.Add(new LinuxFreeMemoryStartCommand());
@@ -62,15 +63,9 @@ namespace CoreClrBuilder
             BatchCommand batchCommand = new BatchCommand(true);
             if (EnvironmentSettings.Platform == Platform.Unix)
                 batchCommand.Add(new UnixGrantAccessCommand(envSettings.WorkingDir, envSettings.WorkingDir));
-            //batchCommand.Add(new RestoreCommand(envSettings, String.Empty));
             foreach (var project in productInfo.Projects) {
-                if (!project.IsTestProject)
-                    continue;
-
-                batchCommand.Add(new RestoreCommand(envSettings, project.LocalPath));
-                batchCommand.Add(new BuildCommand(envSettings, project.LocalPath, project.BuildConfiguration));
-                batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
-                
+                if (project.IsTestProject)
+                    batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
                 //if (EnvironmentSettings.Platform == Platform.Unix)
                 //{
                 //    batchCommand.Add(new LinuxFreeMemoryStartCommand());

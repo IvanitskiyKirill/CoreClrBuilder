@@ -30,7 +30,7 @@ namespace CoreClrBuilder
             foreach (XmlNode location in vssLocations.ChildNodes)
             {
                 bool isTestProject = location.Attributes["TestProject"] == null ? false : Convert.ToBoolean(location.Attributes["TestProject"].InnerText);
-                string buildConf = location.Attributes["BuildConfiguration"] == null ? (isTestProject ? "DebugTest" : "Release") : location.Attributes["BuildConfiguration"].InnerText;
+                string buildConf = location.Attributes["BuildConfiguration"] == null ? (isTestProject ? "DebugTest" : "DebugTest") : location.Attributes["BuildConfiguration"].InnerText;
                 string vssPath = location.Attributes["VSSPath"].InnerText;
                 string localPath = location.Attributes["ReferenceName"].InnerText;
                 projects.Add(new CoreClrProject(vssPath, localPath, ReleaseVersion, buildConf, framework, isTestProject));
