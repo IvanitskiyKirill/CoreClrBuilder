@@ -58,20 +58,37 @@ namespace CoreClrBuilder
             }
             return batchCommand;
         }
-        public ICommand RunTests(string runtime)
-        {
+        public ICommand RunTests(string runtime) {
             BatchCommand batchCommand = new BatchCommand(true);
             if (EnvironmentSettings.Platform == Platform.Unix)
                 batchCommand.Add(new UnixGrantAccessCommand(envSettings.WorkingDir, envSettings.WorkingDir));
+            List<string> nUnitTestFiles = new List<string>();
             foreach (var project in productInfo.Projects) {
-                if (project.IsTestProject)
-                    batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
+                if (!project.IsTestProject)
+                    continue;
+                string nUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
+                nUnitTestFiles.Add(nUnitResults);
+
+                batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
+                //batchCommand.Add(new ActionCommand("rename nunit results", ()=> {
+                //    if (File.Exists(nUnitResults) && File.Exists(CoreClrProject.TEST_FILE_NAME)) {
+                //        File.Copy(CoreClrProject.TEST_FILE_NAME, nUnitResults, true);
+                //        File.Delete(CoreClrProject.TEST_FILE_NAME);
+                //    }
+                //}));
+                batchCommand.Add(new Nunit3To2Coverter(CoreClrProject.TEST_FILE_NAME, nUnitResults));
+
+
                 //if (EnvironmentSettings.Platform == Platform.Unix)
                 //{
                 //    batchCommand.Add(new LinuxFreeMemoryStartCommand());
                 //    batchCommand.Add(new LinuxFreeMemoryCommand());
                 //}
             }
+            //batchCommand.Add(new ActionCommand("Tests merge", () => {
+            //    NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
+            //}));
+
             return batchCommand;
         }
         public ICommand CopyProjects(string copyPath, bool copySubDirs) {
@@ -92,7 +109,7 @@ namespace CoreClrBuilder
         public ICommand CopyTestbuildFolder(string runtime, string framework) {
             var batchCommand = new BatchCommand();
             var sourcePath = TestbuildPathHelper.Combine(envSettings.BuildArtifactsFolder, runtime, framework);
-
+             
             batchCommand.Add(new CreateDirectoryCommand(envSettings.LocalTestbuildFolder));
             batchCommand.Add(new CopyDirectoryCommand(sourcePath, envSettings.LocalTestbuildFolder, true));
 

@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Nunit3To2Coverter.cs" />
     <Compile Include="Commands\PackCommand.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="CommandFactory.cs" />
@@ -73,6 +74,8 @@
     <Compile Include="CoreClrProject.cs" />
     <Compile Include="Commands\InstallTestbuildCommand.cs" />
     <Compile Include="Commands\CreateDirectoryCommand.cs" />
+    <Compile Include="nunit3tests\MyNUnit2XmlResultWriter.cs" />
+    <Compile Include="nunit3tests\NUnit2ResultSummary.cs" />
     <Compile Include="Settings\EnvironmentSettings.cs" />
     <Compile Include="Executor.cs" />
     <Compile Include="NUnitMerger.cs" />
