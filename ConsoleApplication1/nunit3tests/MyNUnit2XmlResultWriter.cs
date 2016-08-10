@@ -259,7 +259,7 @@ namespace NUnit.Engine.Addins {
             }
             node2 = result.SelectSingleNode("failure/message");
             XmlNode node3 = result.SelectSingleNode("failure/stack-trace");
-            if(node2 != null) {
+            if(node2 != null && result.Name != "test-suite") {
 
                 this.WriteFailureElement(node2.InnerText, node3 == null ? null : node3.InnerText);
             }

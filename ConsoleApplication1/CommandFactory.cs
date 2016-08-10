@@ -66,18 +66,16 @@ namespace CoreClrBuilder
             foreach (var project in productInfo.Projects) {
                 if (!project.IsTestProject)
                     continue;
-                string nUnitResults = Path.Combine(envSettings.WorkingDir, project.TestResultFileName);
-                nUnitTestFiles.Add(nUnitResults);
+                //string nUnitResults = Path.Combine(envSettings.WorkingDir, project.NUnit3FileName);
+                //nUnitTestFiles.Add(nUnitResults);
 
                 batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
-                //batchCommand.Add(new ActionCommand("rename nunit results", ()=> {
-                //    if (File.Exists(nUnitResults) && File.Exists(CoreClrProject.TEST_FILE_NAME)) {
-                //        File.Copy(CoreClrProject.TEST_FILE_NAME, nUnitResults, true);
+                batchCommand.Add(new Nunit3To2Coverter(project.NUnit3FileName, project.NUnit2FileName));
+                //batchCommand.Add(new ActionCommand("remove nunit results", () => {
+                //    if (File.Exists(CoreClrProject.TEST_FILE_NAME)) {
                 //        File.Delete(CoreClrProject.TEST_FILE_NAME);
                 //    }
                 //}));
-                batchCommand.Add(new Nunit3To2Coverter(CoreClrProject.TEST_FILE_NAME, nUnitResults));
-
 
                 //if (EnvironmentSettings.Platform == Platform.Unix)
                 //{
