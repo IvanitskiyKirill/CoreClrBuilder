@@ -12,8 +12,6 @@ namespace CoreClrBuilder.Commands
         string fileName;
         string args;
         string comment;
-        protected virtual bool ThrowWrongExitCodeException { get { return true; } }
-
         protected Command() { }
         public Command(string fileName, string args, string comment, string workingDir)
         {

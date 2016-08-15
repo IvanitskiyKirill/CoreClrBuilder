@@ -122,10 +122,14 @@ namespace CoreClrBuilder
                 Console.WriteLine("End command: " + command.ToString());
 
                 OutputLog.LogTextNewLine("\r\n<<<<done. Elapsed time {0:F2} sec", timer.Elapsed.TotalSeconds);
+                
                 return 0;
             }
             catch (Exception e)
             {
+                if (command is RunTestsCommand && e is WrongExitCodeException)
+                    return 1;
+
                 Console.WriteLine("Exception in command: " + command.ToString());
                 OutputLog.LogTextNewLine("\r\n<<<<exception. Elapsed time {0:F2} sec", timer.Elapsed.TotalSeconds);
                 OutputLog.LogException(e);

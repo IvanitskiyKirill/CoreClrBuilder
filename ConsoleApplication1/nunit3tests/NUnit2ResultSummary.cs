@@ -81,6 +81,8 @@ namespace NUnit.Engine.Addins {
                 case "Cancelled":
                     break;
                 case "Error":
+                    this.failureCount++;
+                    this.testsRun++;
                     break;
                 case "NotRunnable":
                 case "Invalid":
