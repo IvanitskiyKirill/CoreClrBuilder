@@ -67,7 +67,7 @@ namespace CoreClrBuilder
                 if (!project.IsTestProject)
                     continue;
                 //string nUnitResults = Path.Combine(envSettings.WorkingDir, project.NUnit3FileName);
-                //nUnitTestFiles.Add(nUnitResults);
+                nUnitTestFiles.Add(project.NUnit2FileName);
 
                 batchCommand.Add(new RunTestsCommand(envSettings, project, runtime));
                 batchCommand.Add(new Nunit3To2Coverter(project.NUnit3FileName, project.NUnit2FileName));
@@ -83,10 +83,11 @@ namespace CoreClrBuilder
                 //    batchCommand.Add(new LinuxFreeMemoryCommand());
                 //}
             }
-            //batchCommand.Add(new ActionCommand("Tests merge", () => {
-            //    NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
-            //}));
-
+            if (EnvironmentSettings.Platform == Platform.Unix) {
+                batchCommand.Add(new ActionCommand("Tests merge", () => {
+                    NUnitMerger.MergeFiles(nUnitTestFiles, "nunit-result.xml");
+                }));
+            }
             return batchCommand;
         }
         public ICommand CopyProjects(string copyPath, bool copySubDirs) {
